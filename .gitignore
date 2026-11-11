@@ -1,0 +1,74 @@
+# ============================================================
+# 简易图书借阅系统 (C++17 / FLTK / SQLite)
+# 原则：只纳管自己写的源码、文档与构建脚本。
+#       便携工具链由 tools/*.py 重新下载，运行数据永远不会入库。
+# ============================================================
+
+# --- 第三方便携工具链（约 858 MB，可完整重建）---
+# 恢复顺序：tools/fetch_deps.py → tools/extract_deps.py
+#           → tools/setup_mingw.py → build.bat
+tools/_downloads/
+tools/cmake-*/
+tools/msys2root/
+# fltk-1.4.5 源码 与 fltk-install 安装产物
+tools/fltk-*/
+tools/sqlite-amalgamation-*/
+
+# --- 构建产物 ---
+build/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+CTestTestfile.cmake
+build.ninja
+.ninja_deps
+.ninja_log
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dll
+*.exe
+*.pdb
+*.ilk
+*.idb
+*.exp
+*.dylib
+
+# --- 运行数据：含读者姓名 / 学号 / 借阅记录，绝不入库 ---
+data/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*.ini
+*.log
+
+# --- 文档流水线中间产物（保留 stage1 的 markdown 源稿）---
+output/**/*.html
+output/**/*.docx
+output/**/*.yaml
+output/**/stage2/
+output/**/stage3/
+output/_probe.*
+
+# --- 编辑器 / 系统 ---
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.vcxproj.user
+*.swp
+*~
+.DS_Store
+Thumbs.db
+__pycache__/
+*.py[cod]
+.venv/
+venv/
