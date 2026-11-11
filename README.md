@@ -33,14 +33,27 @@ SQLite                   data/library.db（4 表 + 2 视图 + 部分唯一索引
 
 ## 构建（Windows 10/11 x64）
 
-项目自带便携工具链，位于 `tools/`：
+### 从 Git 仓库克隆后：先恢复便携工具链
+
+**仓库不含约 858 MB 的第三方便携工具链**（见 `.gitignore`），只保留源码、设计文档与 `tools/*.py` 获取脚本。首次克隆后按顺序恢复：
+
+```
+python tools/fetch_deps.py        # 下载 CMake / FLTK / SQLite 归档到 tools/_downloads
+python tools/setup_mingw.py       # 从 MSYS2 镜像下载并解包 MinGW-w64 到 tools/msys2root
+python tools/extract_deps.py      # 解压归档，并校验四项依赖是否齐全
+build.bat                         # 一键编译
+```
+
+> 下载慢时可用 `tools/fetch_deps_parallel.py`、`tools/fetch_pkgs.py` 加速；本机已装好工具链的可直接跳到 `build.bat`。这些目录随时可删除重建，**不要手工编辑，也不要提交到 Git**。
+
+### 工具链组成（恢复后）
 
 - `tools/msys2root/mingw64/bin` — MinGW-w64 GCC 16.2（gcc / g++ / ninja / make）
 - `tools/cmake-3.31.6-windows-x86_64/bin` — CMake 3.31.6
 - `tools/fltk-1.4.5` — FLTK 1.4.5 源码（首次构建时静态编译并安装到 `tools/fltk-install`）
 - `tools/sqlite-amalgamation-3540100` — SQLite 3.54.1 amalgamation（直接编译进 exe）
 
-双击或在命令行执行：
+恢复完成后，双击或在命令行执行：
 
 ```
 build.bat
@@ -65,13 +78,30 @@ build.bat
 并在空库时写入 3 个书架、8 册图书、4 名学生、2 条借阅记录（含 1 条逾期演示）。
 DDL 全文见《详细设计说明书》第 4 章，也在 `src/database.cpp` 中。
 
-## 测试用例
+## 测试
 
 《详细设计说明书》第 9.2 节给出 TC-01～TC-12，覆盖实体校验、日期计算、建库、
 唯一约束、借书上限、逾期禁借、还书状态恢复、界面操作与干净环境重建。
+
+其中核心层已自动化：执行 `run_tests.bat`，脚本会用便携 g++ 编译
+`tests/smoke_test.cpp` 并运行 16 条断言（使用独立的 `build/test_library.db`，
+不会污染正式数据）。当前结果：**16 passed, 0 failed**。
 
 ## 常见问题
 
 - **中文显示为方框**：确认系统已安装「微软雅黑」字体；程序启动时通过 `Fl::set_font` 指定。
 - **启动时报数据库错误**：删除 `data/library.db`（及 `-wal`/`-shm` 文件）让程序重建。
 - **换机器运行**：复制 `LibraryApp.exe` 与 `data/` 即可，无需安装任何运行库（全静态链接）。
+
+## 版本管理约定
+
+本仓库用 Git 管理，`.gitignore` 明确排除三类内容：
+
+| 排除项 | 原因 |
+| --- | --- |
+| `tools/` 下的便携工具链与 `tools/_downloads/` | 约 858 MB，可由脚本重新下载，属于第三方依赖 |
+| `build/`、`*.o`、`*.exe` 等编译产物 | 每次构建都会变，且无法做文本 diff |
+| `data/`、`*.db`、`*.ini`、`*.log` | 运行数据含读者姓名、学号与借阅记录，属个人信息 |
+
+`.gitattributes` 统一了源码换行（`.bat` 用 CRLF，其余用 LF），并把 docx / 图片标为二进制。
+日常提交建议：`git status` → `git add .` → `git commit -m "..."` →（若已关联远程）`git push`。
