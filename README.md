@@ -48,7 +48,7 @@
 | `build/cmake/LibraryApp.exe` | 桌面程序（构建后生成） |
 | `build/cmake/DemoDataTool.exe` | 演示数据生成工具（构建后生成） |
 | `data/library.db` | 运行后自动生成的数据库（含演示数据） |
-| `build.bat` / `generate_demo.bat` / `run_tests.bat` | 一键构建 / 生成演示数据 / 运行测试 |
+| `build.bat` / `generate_demo.bat` / `run_tests.bat` / `gen_docs.bat` | 一键构建 / 生成演示数据 / 运行测试 / 生成 API 文档 |
 
 ## 技术架构
 

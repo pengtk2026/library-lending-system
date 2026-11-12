@@ -6,7 +6,7 @@
 
 ### 新增
 
-- `Doxyfile`：安装 Doxygen + Graphviz 后执行 `doxygen Doxyfile`，生成带类图 / 调用图的中文 API 文档
+- `Doxyfile` 与 `gen_docs.bat`：一键生成带类图 / 调用图的中文 API 文档（需本机安装 Doxygen + Graphviz，脚本内含默认便携路径）
 - 本地生成 `compile_commands.json`（CMake `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON`，不入库），供 clangd / VS Code 精确跳转
 
 ### 计划中
