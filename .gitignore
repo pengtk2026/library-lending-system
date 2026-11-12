@@ -50,6 +50,8 @@ data/
 *.log
 
 # --- 文档流水线中间产物（保留 stage1 的 markdown 源稿）---
+# output/ 下的临时 GUI 抓图混有与本项目无关的材料，整理到 docs/screenshots/ 后再入库
+output/*.png
 output/**/*.html
 output/**/*.docx
 output/**/*.yaml

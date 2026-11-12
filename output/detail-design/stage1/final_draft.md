@@ -239,12 +239,12 @@ JOIN books b ON b.id = r.book_id
 LEFT JOIN bookshelves sh ON sh.id = b.shelf_id;
 
 CREATE VIEW IF NOT EXISTS v_shelf_stat AS
-SELECT sh.id, sh.code, sh.location, sh.category, sh.capacity,
+SELECT sh.id, sh.code, sh.location, sh.category, sh.capacity, sh.remark,
        COUNT(b.id) AS book_count,
        SUM(CASE WHEN b.status = 0 THEN 1 ELSE 0 END) AS available_count
 FROM bookshelves sh
 LEFT JOIN books b ON b.shelf_id = sh.id
-GROUP BY sh.id, sh.code, sh.location, sh.category, sh.capacity;
+GROUP BY sh.id, sh.code, sh.location, sh.category, sh.capacity, sh.remark;
 ```
 
 ## 4.4 字段映射表
@@ -374,6 +374,7 @@ public:
 | removeBook | `void removeBook(int id)` | 预检未归还记录后 delete |
 | listBooks | `std::vector<Book> listBooks(const std::string& kw)` | 空关键字走 listAll，否则 search |
 | addStudent / updateStudent / removeStudent | 同图书 | 附加学号唯一性预检 |
+| listStudents / activeLoanCount | `std::vector<Student> listStudents()` / `int activeLoanCount(int)` | 学生列表与界面「已借册数」列的数据源 |
 | addShelf / updateShelf / removeShelf | 同图书 | 删除前 `countBooks()==0` 检查 |
 | shelfStats | `std::vector<ShelfStat> shelfStats()` | 读取 v_shelf_stat |
 | borrowBook | `int borrowBook(int studentId, int bookId)` | 事务，见 6.3 |
@@ -611,5 +612,39 @@ SELECT
 | Statistics、LibraryService | include/service.h | src/service.cpp |
 | UiUtils、DialogBase、三个 Dialog、四个 Panel、MainWindow | include/ui.h | src/ui.cpp |
 | main() | — | src/main.cpp |
+
+# 11 大批量演示数据生成设计
+
+## 11.1 目标与入口
+
+为课程演示提供可复现的大规模数据集，精确规模为 1000 册图书、100 名学生、500 条借阅记录。
+生成器 `DemoDataGenerator` 声明于 `include/demo_data.h`、实现于 `src/demo_data.cpp`，
+由独立的控制台工具 `src/demo_tool_main.cpp`（构建目标 DemoDataTool）与
+`LibraryApp.exe --generate-demo` 两个入口调用，脚本为 `generate_demo.bat`。
+
+| 数据 | 规模 | 生成方式 |
+| --- | --- | --- |
+| 书架 | 20 | A-01～D-05，每架容量 60，共 1200 册位 |
+| 图书 | 1000 | 40 主题 × 5 变体 × 5 分册，ISBN 带 EAN-13 校验位 |
+| 学生 | 100 | 30 姓 × 40 名组合，学号 20240001～20240100 |
+| 当前借阅 | 200 | 其中每 5 条 1 条逾期（40 条），借期 30 天 |
+| 历史借阅 | 300 | 已归还，归还日可略超应还日以演示逾期归还 |
+
+## 11.2 算法与一致性
+
+生成过程在**单一事务**内完成，顺序为：清空 borrow_records → books → students → bookshelves
+→ 重置 sqlite_sequence → 批量插入（预编译语句复用 + reset）→ 提交 → 统计与校验。
+
+- 当前借阅选用互不重复的 200 册图书，其 `books.status` 置 1，其余 800 册置 0；
+- 学生分配采用「轮转 + 可借上限检查」，保证任一学生当前借阅数不超过 max_borrow；
+- 逾期记录 `due_date` 早于当天，正常记录 `due_date` 晚于当天；
+- 历史记录只从未被当前借出的图书中选取，避免与部分唯一索引 `uq_active_loan` 冲突；
+- 所有日期通过 `addDays()` 计算，保持 `YYYY-MM-DD` 定长文本格式。
+
+## 11.3 内置校验
+
+`DemoDataGenerator::verify()` 输出 5 项检查：借出图书必有未归还记录、未归还记录对应图书必为借出、
+学生当前借阅不超上限、逾期记录应还日确实过期、`PRAGMA foreign_key_check` 无异常。
+完整结果写入 `data/demo_data_report.txt`；任一 FAIL 时工具返回退出码 2。
 
 本详细设计与源代码、概要设计三者使用同一套类名、字段名与表名；任何实现期调整必须同步更新三处，保持可追溯性。
