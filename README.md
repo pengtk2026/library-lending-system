@@ -35,33 +35,41 @@ SQLite                   data/library.db（4 表 + 2 视图 + 部分唯一索引
 
 ## 构建（Windows 10/11 x64）
 
-### 从 Git 仓库克隆后：先恢复便携工具链
+### 仓库里已经带了什么
 
-**仓库不含约 858 MB 的第三方便携工具链**（见 `.gitignore`），只保留源码、设计文档与 `tools/*.py` 获取脚本。首次克隆后按顺序恢复：
+为方便 clone 后直接编译，**FLTK 1.4.5 源码与 SQLite 3.54.1 amalgamation 已随仓库分发**（合计约 34 MB / 1523 个文件），无需再下载这两个依赖：
 
-```
-python tools/fetch_deps.py        # 下载 CMake / FLTK / SQLite 归档到 tools/_downloads
-python tools/setup_mingw.py       # 从 MSYS2 镜像下载并解包 MinGW-w64 到 tools/msys2root
-python tools/extract_deps.py      # 解压归档，并校验四项依赖是否齐全
-build.bat                         # 一键编译
-```
+| 目录 | 内容 | 是否入库 |
+| --- | --- | --- |
+| `tools/fltk-1.4.5/` | FLTK 1.4.5 完整源码 | 随仓库分发 |
+| `tools/sqlite-amalgamation-3540100/` | SQLite amalgamation（含 `sqlite3.c`） | 随仓库分发 |
+| `tools/fltk-install/` | FLTK 静态编译产物 | 否，由 `build.bat` 首次运行时生成 |
+| `tools/msys2root/`、`tools/cmake-*/` | MinGW-w64 编译器与 CMake（约 633 MB） | 否，由 `tools/*.py` 恢复 |
 
-> 下载慢时可用 `tools/fetch_deps_parallel.py`、`tools/fetch_pkgs.py` 加速；本机已装好工具链的可直接跳到 `build.bat`。这些目录随时可删除重建，**不要手工编辑，也不要提交到 Git**。
+第三方源码的来源与授权见 [tools/THIRD_PARTY_NOTICES.md](tools/THIRD_PARTY_NOTICES.md)。
 
-### 工具链组成（恢复后）
+### 方式 A · 本机已有 MinGW-w64 + CMake + Ninja（推荐）
 
-- `tools/msys2root/mingw64/bin` — MinGW-w64 GCC 16.2（gcc / g++ / ninja / make）
-- `tools/cmake-3.31.6-windows-x86_64/bin` — CMake 3.31.6
-- `tools/fltk-1.4.5` — FLTK 1.4.5 源码（首次构建时静态编译并安装到 `tools/fltk-install`）
-- `tools/sqlite-amalgamation-3540100` — SQLite 3.54.1 amalgamation（直接编译进 exe）
-
-恢复完成后，双击或在命令行执行：
+`build.bat` 会优先使用便携工具链；找不到时**自动回退到系统 PATH** 里的 `gcc` / `g++` / `cmake` / `ninja`。因此直接双击或在命令行执行即可，无需任何下载：
 
 ```
 build.bat
 ```
 
-脚本会：① 静态编译 FLTK；② 用 Ninja 配置本项目；③ 编译链接生成 `build/cmake/LibraryApp.exe`。
+### 方式 B · 零配置，恢复项目自带便携工具链
+
+首次克隆后按顺序执行一次：
+
+```
+python tools/fetch_deps.py        # 下载 CMake / 离线依赖归档到 tools/_downloads
+python tools/setup_mingw.py       # 从 MSYS2 镜像构建 MinGW-w64 到 tools/msys2root
+python tools/extract_deps.py      # 解压归档并校验依赖
+build.bat                         # 一键编译
+```
+
+> 下载慢时可用 `tools/fetch_deps_parallel.py`、`tools/fetch_pkgs.py` 加速；FLTK 与 SQLite 源码已内置，脚本只需补齐编译器与 CMake。这些自动生成的目录随时可删除重建，**不要手工编辑，也不要提交到 Git**。
+
+两种方式下，`build.bat` 都会：① 静态编译 FLTK 并安装到 `tools/fltk-install`；② 用 Ninja 配置本项目；③ 编译链接生成 `build/cmake/LibraryApp.exe`。
 之后在项目根目录运行该 exe（保证工作目录内有 `data/`），首次启动自动建库并写入演示数据。
 
 ## 功能

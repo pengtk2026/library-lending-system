@@ -4,9 +4,15 @@ setlocal
 set "ROOT=%~dp0"
 set "TOOLCHAIN=%ROOT%tools\msys2root\mingw64\bin"
 set "CMAKE_BIN=%ROOT%tools\cmake-3.31.6-windows-x86_64\bin"
-set "PATH=%TOOLCHAIN%;%CMAKE_BIN%;%PATH%"
-set "CC=%TOOLCHAIN%\gcc.exe"
-set "CXX=%TOOLCHAIN%\g++.exe"
+if exist "%TOOLCHAIN%\g++.exe" (
+  set "PATH=%TOOLCHAIN%;%CMAKE_BIN%;%PATH%"
+  set "CC=%TOOLCHAIN%\gcc.exe"
+  set "CXX=%TOOLCHAIN%\g++.exe"
+) else (
+  echo [info] portable toolchain not found; using gcc/g++/cmake/ninja from system PATH
+  set "CC=gcc"
+  set "CXX=g++"
+)
 set "FLTK_SRC=%ROOT%tools\fltk-1.4.5"
 set "FLTK_INSTALL=%ROOT%tools\fltk-install"
 
