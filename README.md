@@ -1,7 +1,41 @@
 # 简易图书借阅系统（C++17 / FLTK / SQLite）
 
-一个按软件工程流程完成的课程级桌面应用：**概要设计说明书 → 详细设计说明书 → 编码实现 → 构建验证**。
-采用 C++ 面向对象四层架构，FLTK 1.4.5 原生界面，SQLite 3 单文件数据库，全部依赖便携化，不修改系统环境变量。
+[![C++17](https://img.shields.io/badge/C%2B%2B-17-00599C.svg)](https://isocpp.org/) [![FLTK 1.4.5](https://img.shields.io/badge/FLTK-1.4.5-2E8B57.svg)](https://www.fltk.org/) [![SQLite 3.54.1](https://img.shields.io/badge/SQLite-3.54.1-lightgrey.svg)](https://www.sqlite.org/) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Chinese docs](https://img.shields.io/badge/docs-Chinese-orange.svg)](docs/) [![Repository checks](https://github.com/pengtk2026/library-lending-system/actions/workflows/ci.yml/badge.svg)](https://github.com/pengtk2026/library-lending-system/actions/workflows/ci.yml)
+
+**一个程序、四个模块、零第三方运行时依赖**：图书 / 学生 / 书架 / 借阅全流程管理，全中文界面，单文件 SQLite 数据库，**clone 后一条命令即可编译运行**。
+
+> **English**: A course-level library lending desktop app built with C++17, a four-layer OO architecture, FLTK 1.4.5 GUI and embedded SQLite. Ships with complete Chinese design documents, reproducible demo data (1000 books / 100 students / 500 loans) and portable build scripts. Windows 10/11 x64 only.
+
+按软件工程流程完成：**概要设计说明书 → 详细设计说明书 → 编码实现 → 构建验证**。FLTK 1.4.5 与 SQLite 3.54.1 源码已随仓库分发，无需额外安装依赖库。
+
+## 界面一览
+
+![图书管理主界面](docs/screenshots/books-tab.png)
+
+![大批量演示数据下的统计与列表](docs/screenshots/overview.png)
+
+> 截图数据来自 `generate_demo.bat` 生成的演示库，均为程序生成的假数据，不含真实读者信息。
+
+## 30 秒快速开始
+
+| 你的情况 | 这样做 |
+| --- | --- |
+| **只想运行程序** | 到 [Releases 页面](https://github.com/pengtk2026/library-lending-system/releases) 下载 exe 附件；若尚未发布，按下方「构建」章节自行编译 |
+| **想自己编译** | 本机装好 MinGW-w64 + CMake + Ninja 后双击 `build.bat`，约 3～5 分钟生成 `build/cmake/LibraryApp.exe` |
+| **想看完整数据** | 运行 `generate_demo.bat` 生成 1000 册图书 / 100 名学生 / 500 条借阅记录 |
+| **想读设计** | 直接看 `docs/` 下三份中文说明书，或 [项目源码导读](docs/项目源码导读.docx) |
+
+> 仓库内不含 exe 二进制；FLTK 与 SQLite 源码已内置，详见下方「构建」章节与 [第三方源码说明](tools/THIRD_PARTY_NOTICES.md)。
+
+**文档导航**
+
+| 文档 | 内容 |
+| --- | --- |
+| [概要设计说明书](docs/概要设计说明书.docx) | 需求、架构、类模型、数据库、界面、追溯矩阵 |
+| [详细设计说明书](docs/详细设计说明书.docx) | 类签名、完整 DDL、DAO SQL、控件与回调、算法、测试用例 |
+| [项目源码导读](docs/项目源码导读.docx) | 四层源码 + SQLite / FLTK 源码解析与行号索引 |
+| [CHANGELOG.md](CHANGELOG.md) | 版本变更记录 |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | 开发环境、代码约定与提交规范 |
 
 ## 交付物
 
@@ -142,3 +176,15 @@ DDL 全文见《详细设计说明书》第 4 章，也在 `src/database.cpp` �
 
 `.gitattributes` 统一了源码换行（`.bat` 用 CRLF，其余用 LF），并把 docx / 图片标为二进制。
 日常提交建议：`git status` → `git add .` → `git commit -m "..."` →（若已关联远程）`git push`。
+
+## 参与贡献与反馈
+
+- 发现问题或有新想法，欢迎按模板提交 Issue；代码改动请先看 [CONTRIBUTING.md](CONTRIBUTING.md)。
+- 所有参与者请遵守 [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)，版本变化见 [CHANGELOG.md](CHANGELOG.md)。
+- **如果这个项目或它的中文设计文档对你有帮助，欢迎点一个 Star，或分享给同样在学 C++ / 数据库课程的同学。**
+
+> 一个具体的复现步骤，往往比一句「用不了」更能帮到所有人。
+
+## 许可证
+
+本项目代码采用 [MIT 许可证](LICENSE)。随仓库分发的 FLTK 1.4.5 与 SQLite 3.54.1 源码各自适用其上游许可证，详见 [tools/THIRD_PARTY_NOTICES.md](tools/THIRD_PARTY_NOTICES.md)。
