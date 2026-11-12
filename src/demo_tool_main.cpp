@@ -2,7 +2,7 @@
  * @file demo_tool_main.cpp
  * @brief 演示数据生成工具的控制台入口（构建目标 DemoDataTool.exe）。
  *
- * @section design 设计说明
+ * @par 设计说明
  * - 定位：与 GUI 程序并列的可执行目标，不链接 FLTK，只链接 lls_core 静态库；
  *   由 generate_demo.bat 调用，也可在命令行直接运行。
  * - 职责：准备 data/ 目录 → 打开数据库 → 幂等建表 → 调用 DemoDataGenerator 重建
@@ -29,7 +29,7 @@
 #include <windows.h>     // SetConsoleOutputCP / CP_UTF8：控制台 UTF-8 支持
 #endif
 
-/**
+/*
  * @brief 控制台工具入口。
  * @return 0 成功；1 生成异常；2 一致性校验未通过。
  * @note 主要算法：

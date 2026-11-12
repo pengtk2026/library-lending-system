@@ -2,7 +2,7 @@
  * @file database.h
  * @brief 数据访问层基础设施声明：SQLite 连接、预编译语句、事务与模式初始化。
  *
- * @section design 设计说明
+ * @par 设计说明
  * - 所属层次：数据访问层的基础设施，向下封装 sqlite3 C API，向上为四个 DAO 提供类型；
  *   实现见 `src/database.cpp`。本头文件**不包含 sqlite3.h**，只用不透明结构体前向声明，
  *   避免把 696 KB 的 SQLite 头文件传播给 UI/Service 层，缩短编译时间并保持封装。

@@ -2,7 +2,7 @@
  * @file ui.cpp
  * @brief 表现层实现：FLTK 主窗口、四个功能面板、三个模态输入对话框与全部事件回调。
  *
- * @section design 设计说明
+ * @par 设计说明
  * - 所属层次：表现层（UI），是唯一包含 FLTK 头文件的实现文件；
  *   对应声明 include/ui.h。界面只调用 LibraryService，绝不直接访问 DAO 或拼接 SQL。
  * - 控件树：MainWindow(Fl_Double_Window 1024x680)
@@ -16,7 +16,7 @@
  * - 事件模型：所有回调为 `static void (Fl_Widget*, void*)`，用 static_cast 从 void* 取回对象指针；
  *   invoke<Panel, &Panel::method>() 模板把「异常边界」收敛到一处，
  *   保证任何 AppException / std::exception 都被转换为对话框 + 状态栏提示，绝不穿透 FLTK 回调。
- * - 列表渲染算法：Fl_Hold_Browser 以 '\t' 为列分隔符、'@' 为格式符；
+ * - 列表渲染算法：Fl_Hold_Browser 以 制表符（Tab） 为列分隔符、'@' 为格式符；
  *   第 1 行固定为表头（用 @b 加粗），数据行首列恒为主键 ID，
  *   UiUtils::selectedId() 通过解析首列把「用户选中的行」还原为数据库 ID。
  *   用户数据中的 @ 需转义为 @@，制表符/换行需替换为空格，防止列错位或格式注入。
@@ -40,7 +40,7 @@
 namespace lls {
 namespace {  // 匿名命名空间：仅本文件使用的布局/回调辅助工具
 
-/**
+/*
  * @brief 在对话框中创建「左侧文字标签 + 右侧单行输入框」的标准行。
  * @param y 行的纵坐标（对话框相对坐标）。
  * @param label 左侧标签文字。
@@ -55,21 +55,21 @@ Fl_Input* makeInput(int y, const char* label, int width = 290) {
     return new Fl_Input(140, y, width, 26);                   ///< 右侧单行文本输入框
 }
 
-/** @brief 创建「标签 + 只允许数字的输入框」行，用于出版年、可借上限、容量。 */
+/* @brief 创建「标签 + 只允许数字的输入框」行，用于出版年、可借上限、容量。 */
 Fl_Int_Input* makeIntInput(int y, const char* label) {
     Fl_Box* caption = new Fl_Box(20, y, 110, 26, label);     ///< 左侧静态标签
     caption->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);         ///< 框内左对齐
     return new Fl_Int_Input(140, y, 290, 26);                 ///< 数字输入框
 }
 
-/** @brief 创建「标签 + 下拉选择框」行，用于所属书架、状态、筛选。 */
+/* @brief 创建「标签 + 下拉选择框」行，用于所属书架、状态、筛选。 */
 Fl_Choice* makeChoice(int y, const char* label) {
     Fl_Box* caption = new Fl_Box(20, y, 110, 26, label);     ///< 左侧静态标签
     caption->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);         ///< 框内左对齐
     return new Fl_Choice(140, y, 290, 26);                    ///< 下拉选择框
 }
 
-/**
+/*
  * @brief FLTK 回调的统一异常边界（函数模板）。
  * @tparam Panel 面板类型。
  * @tparam Method 指向「无参成员动作」的成员函数指针（非类型模板参数）。
@@ -92,7 +92,7 @@ void invoke(Fl_Widget*, void* data) {
     }
 }
 
-/**
+/*
  * @brief 列表单元格的空值占位与格式清洗。
  * @param value 原始文本。
  * @return 非空时返回清洗后的文本，空时返回 "-"。
@@ -105,17 +105,17 @@ std::string statusOr(const std::string& value) {
 
 // ==================== UiUtils（界面通用工具） ====================
 
-/** @brief 显示普通信息弹窗。 */
+/* @brief 显示普通信息弹窗。 */
 void UiUtils::info(const std::string& message) {
     fl_alert("%s", message.c_str());                         ///< %s 传参避免文本中的 % 被误解析
 }
 
-/** @brief 显示错误弹窗，统一加「操作失败」前缀。 */
+/* @brief 显示错误弹窗，统一加「操作失败」前缀。 */
 void UiUtils::error(const std::string& message) {
     fl_alert("操作失败：\n%s", message.c_str());
 }
 
-/**
+/*
  * @brief 显示「取消 / 确定」确认框。
  * @param message 提示内容。
  * @return 用户点击「确定」返回 true。
@@ -127,13 +127,13 @@ bool UiUtils::confirm(const std::string& message) {
                      message.c_str()) == 1;
 }
 
-/** @brief 安全读取 Fl_Input 的文本，空指针返回空串。 */
+/* @brief 安全读取 Fl_Input 的文本，空指针返回空串。 */
 std::string UiUtils::text(Fl_Input* input) {
     const char* value = input ? input->value() : nullptr;    ///< FLTK 内部字符串指针
     return value ? std::string(value) : std::string();       ///< 复制为值语义字符串
 }
 
-/**
+/*
  * @brief 把输入控件内容解析为整数。
  * @param input 数字输入框。
  * @return 解析结果；空串或非法输入返回 0（交由实体 validate 给出具体提示）。
@@ -148,7 +148,7 @@ int UiUtils::intValue(Fl_Input* input) {
     }
 }
 
-/**
+/*
  * @brief 清洗将写入 Fl_Browser 的用户文本。
  * @param value 原始文本。
  * @return 可安全显示的文本。
@@ -169,10 +169,10 @@ std::string UiUtils::clean(const std::string& value) {
     return result;
 }
 
-/**
+/*
  * @brief 把一列文本用制表符拼成 Fl_Browser 的一行。
  * @param columns 各列文本。
- * @return 以 '\t' 分隔的行文本。
+ * @return 以 制表符（Tab） 分隔的行文本。
  */
 std::string UiUtils::join(const std::vector<std::string>& columns) {
     std::string result;                                       ///< 结果行
@@ -183,11 +183,11 @@ std::string UiUtils::join(const std::vector<std::string>& columns) {
     return result;
 }
 
-/**
+/*
  * @brief 统一配置列表控件。
  * @param browser 目标 Fl_Hold_Browser。
  * @param widths 以 0 结尾的列宽数组（指针必须在控件生命周期内有效，故各 Panel 用成员数组保存）。
- * @note 算法：column_widths 固定列宽、column_char('\t') 指定列分隔符、
+ * @note 算法：column_widths 固定列宽、column_char(Tab 字符) 指定列分隔符、
  *       保留 '@' 为格式符（表头 @b 加粗）、textsize 与 box 统一外观。
  */
 void UiUtils::setupBrowser(Fl_Hold_Browser* browser, const int* widths) {
@@ -197,12 +197,12 @@ void UiUtils::setupBrowser(Fl_Hold_Browser* browser, const int* widths) {
     browser->box(FL_DOWN_BOX);                               ///< 凹陷边框
 }
 
-/**
+/*
  * @brief 把「列表选中行」还原为数据库主键。
  * @param browser 列表控件。
  * @return 首列 ID；未选中/选中表头/解析失败返回 0。
  * @note 主要算法：Fl_Browser 行号从 1 开始，第 1 行恒为表头，故 line<=1 视为无效；
- *       取 text(line) 后按首个 '\t' 切出首列，再 stoi 转整数。
+ *       取 text(line) 后按首个 制表符（Tab） 切出首列，再 stoi 转整数。
  *       各面板约定「首列必须是 ID」，这是选中行到数据库记录的关键映射约定。
  */
 int UiUtils::selectedId(Fl_Hold_Browser* browser) {
@@ -223,13 +223,13 @@ int UiUtils::selectedId(Fl_Hold_Browser* browser) {
 
 // ==================== DialogBase（模态对话框基类） ====================
 
-/** @brief 构造模态窗口；set_modal() 使其显示期间阻塞父窗口输入。 */
+/* @brief 构造模态窗口；set_modal() 使其显示期间阻塞父窗口输入。 */
 DialogBase::DialogBase(int w, int h, const char* title)
     : Fl_Window(w, h, title) {
     set_modal();
 }
 
-/**
+/*
  * @brief 运行模态事件循环。
  * @return true 表示用户按「确定」且校验通过；false 表示取消/关闭。
  * @note 主要算法：show() 之后用 `while (shown()) Fl::wait();` 持续派发事件，
@@ -241,7 +241,7 @@ bool DialogBase::exec() {
     return confirmed_;                                       ///< 返回用户是否确认
 }
 
-/**
+/*
  * @brief 「取消」按钮回调（静态函数，供 FLTK 调用）。
  * @param data 注册时传入的对话框指针。
  */
@@ -253,7 +253,7 @@ void DialogBase::onCancel(Fl_Widget*, void* data) {
 
 // ==================== BookDialog（图书输入对话框） ====================
 
-/**
+/*
  * @brief 构造新增/编辑图书对话框并回填初始值。
  * @param initial 编辑时的原实体；新增时传空 Book（id=0）。
  * @param shelves 可选书架列表（供「所属书架」下拉框）。
@@ -309,12 +309,12 @@ BookDialog::BookDialog(const Book& initial,
     end();                                                   ///< 结束控件树
 }
 
-/** @brief 「确定」回调：委托给成员 collect() 完成采集与校验。 */
+/* @brief 「确定」回调：委托给成员 collect() 完成采集与校验。 */
 void BookDialog::onOk(Fl_Widget*, void* data) {
     static_cast<BookDialog*>(data)->collect();
 }
 
-/**
+/*
  * @brief 采集控件值 → 组装 Book → 调用实体 validate() → 通过则关闭对话框。
  * @note 主要算法：先逐项读入 result_；书架下拉通过「下标 → shelfIds_」平行数组还原外键；
  *       校验失败时弹窗且**不 hide()**，用户可留在对话框内修正，避免重复打开。
@@ -341,7 +341,7 @@ void BookDialog::collect() {
 
 // ==================== StudentDialog（学生输入对话框） ====================
 
-/** @brief 构造新增/编辑学生对话框并回填初始值；新增时默认上限 5 且启用。 */
+/* @brief 构造新增/编辑学生对话框并回填初始值；新增时默认上限 5 且启用。 */
 StudentDialog::StudentDialog(const Student& initial)
     : DialogBase(460, 340, initial.id() > 0 ? "编辑学生" : "新增学生"),
       result_(initial) {                                     ///< 保留 id 供更新
@@ -369,12 +369,12 @@ StudentDialog::StudentDialog(const Student& initial)
     end();                                                   ///< 结束控件树
 }
 
-/** @brief 「确定」回调：委托 collect()。 */
+/* @brief 「确定」回调：委托 collect()。 */
 void StudentDialog::onOk(Fl_Widget*, void* data) {
     static_cast<StudentDialog*>(data)->collect();
 }
 
-/** @brief 采集学生字段并校验；失败保持对话框打开。 */
+/* @brief 采集学生字段并校验；失败保持对话框打开。 */
 void StudentDialog::collect() {
     result_.setStudentNo(UiUtils::text(studentNo_));         ///< 学号
     result_.setName(UiUtils::text(name_));                   ///< 姓名
@@ -393,7 +393,7 @@ void StudentDialog::collect() {
 
 // ==================== ShelfDialog（书架输入对话框） ====================
 
-/** @brief 构造新增/编辑书架对话框；新增时容量默认 30。 */
+/* @brief 构造新增/编辑书架对话框；新增时容量默认 30。 */
 ShelfDialog::ShelfDialog(const Bookshelf& initial)
     : DialogBase(460, 340, initial.id() > 0 ? "编辑书架" : "新增书架"),
       result_(initial) {                                     ///< 保留 id 供更新
@@ -418,12 +418,12 @@ ShelfDialog::ShelfDialog(const Bookshelf& initial)
     end();                                                   ///< 结束控件树
 }
 
-/** @brief 「确定」回调：委托 collect()。 */
+/* @brief 「确定」回调：委托 collect()。 */
 void ShelfDialog::onOk(Fl_Widget*, void* data) {
     static_cast<ShelfDialog*>(data)->collect();
 }
 
-/** @brief 采集书架字段并校验；失败保持对话框打开。 */
+/* @brief 采集书架字段并校验；失败保持对话框打开。 */
 void ShelfDialog::collect() {
     result_.setCode(UiUtils::text(code_));                   ///< 编号
     result_.setLocation(UiUtils::text(location_));           ///< 位置
@@ -441,7 +441,7 @@ void ShelfDialog::collect() {
 
 // ==================== BookPanel（图书管理页） ====================
 
-/**
+/*
  * @brief 构造图书管理页控件树。
  * @param x,y,w,h Fl_Group 区域（也是 Fl_Tabs 页签区域）。
  * @param svc 业务门面引用。
@@ -474,7 +474,7 @@ BookPanel::BookPanel(int x, int y, int w, int h,
     end();                                                   ///< 结束本组控件树
 }
 
-/**
+/*
  * @brief 重新载入图书列表。
  * @param keyword 检索关键字，空串表示全部。
  * @note 主要算法：
@@ -507,12 +507,12 @@ void BookPanel::refresh(const std::string& keyword) {
     }
 }
 
-/** @brief 把消息转发到主窗口状态栏。 */
+/* @brief 把消息转发到主窗口状态栏。 */
 void BookPanel::status(const std::string& message) {
     if (owner_) owner_->setStatus(message);
 }
 
-/**
+/*
  * @brief 新增图书流程：打开对话框 → 取消则直接返回 → 确认后写库 → 全局刷新。
  * @note 用花括号构造对话框避免 C++ 的 most vexing parse（临时对象被误判为函数声明）。
  */
@@ -524,7 +524,7 @@ void BookPanel::doAdd() {
     status("新增图书成功");
 }
 
-/**
+/*
  * @brief 编辑图书流程：解析选中 ID → 从缓存找原实体 → 对话框 → 更新。
  * @exception NotFoundException 选中行已不在缓存中（列表过期）。
  */
@@ -551,7 +551,7 @@ void BookPanel::doEdit() {
     status("图书信息已更新");
 }
 
-/** @brief 删除图书流程：选中 → 二次确认 → 业务层引用预检 → 全局刷新。 */
+/* @brief 删除图书流程：选中 → 二次确认 → 业务层引用预检 → 全局刷新。 */
 void BookPanel::doDel() {
     const int id = UiUtils::selectedId(list_);               ///< 选中行 ID
     if (id <= 0) {
@@ -564,7 +564,7 @@ void BookPanel::doDel() {
     status("图书已删除");
 }
 
-/** @brief 「查询 / 输入框回车」回调：按关键字重绘列表。 */
+/* @brief 「查询 / 输入框回车」回调：按关键字重绘列表。 */
 void BookPanel::onSearch(Fl_Widget*, void* data) {
     BookPanel* self = static_cast<BookPanel*>(data);          ///< 还原面板
     try {
@@ -575,14 +575,14 @@ void BookPanel::onSearch(Fl_Widget*, void* data) {
     }
 }
 
-/** @brief 「新增」按钮回调，统一走 invoke 异常边界。 */
+/* @brief 「新增」按钮回调，统一走 invoke 异常边界。 */
 void BookPanel::onAdd(Fl_Widget*, void* data) { invoke<BookPanel, &BookPanel::doAdd>(nullptr, data); }
-/** @brief 「编辑」按钮回调。 */
+/* @brief 「编辑」按钮回调。 */
 void BookPanel::onEdit(Fl_Widget*, void* data) { invoke<BookPanel, &BookPanel::doEdit>(nullptr, data); }
-/** @brief 「删除」按钮回调。 */
+/* @brief 「删除」按钮回调。 */
 void BookPanel::onDel(Fl_Widget*, void* data) { invoke<BookPanel, &BookPanel::doDel>(nullptr, data); }
 
-/**
+/*
  * @brief 「刷新」按钮回调：清空检索条件并重载全部图书。
  * @note 不能直接用 invoke 模板，因为 refresh 带默认参数、成员函数指针签名不是 void()，
  *       故单独实现同样的 try/catch 边界。
@@ -600,7 +600,7 @@ void BookPanel::onRefresh(Fl_Widget*, void* data) {
 
 // ==================== StudentPanel（学生管理页） ====================
 
-/** @brief 构造学生管理页：4 个按钮 + 8 列列表。 */
+/* @brief 构造学生管理页：4 个按钮 + 8 列列表。 */
 StudentPanel::StudentPanel(int x, int y, int w, int h,
                            LibraryService& svc, MainWindow* owner)
     : Fl_Group(x, y, w, h, "学生管理"), svc_(svc), owner_(owner) {
@@ -619,7 +619,7 @@ StudentPanel::StudentPanel(int x, int y, int w, int h,
     end();
 }
 
-/**
+/*
  * @brief 重载学生列表，额外显示每人当前已借册数。
  * @note 算法：逐行调用 Service::activeLoanCount()（每个学生一次 COUNT 查询）；
  *       学生规模百级，索引 idx_loans_student 保证开销很小。
@@ -643,12 +643,12 @@ void StudentPanel::refresh() {
     }
 }
 
-/** @brief 转发消息到主窗口状态栏。 */
+/* @brief 转发消息到主窗口状态栏。 */
 void StudentPanel::status(const std::string& message) {
     if (owner_) owner_->setStatus(message);
 }
 
-/** @brief 新增学生：模态对话框 → 写库 → 全局刷新。 */
+/* @brief 新增学生：模态对话框 → 写库 → 全局刷新。 */
 void StudentPanel::doAdd() {
     StudentDialog dialog{Student{}};                          ///< 花括号构造避免 vexing parse
     if (!dialog.exec()) return;
@@ -657,7 +657,7 @@ void StudentPanel::doAdd() {
     status("新增学生成功");
 }
 
-/** @brief 编辑学生：从缓存取原实体 → 对话框 → 更新。 */
+/* @brief 编辑学生：从缓存取原实体 → 对话框 → 更新。 */
 void StudentPanel::doEdit() {
     const int id = UiUtils::selectedId(list_);               ///< 选中行 ID
     if (id <= 0) {
@@ -681,7 +681,7 @@ void StudentPanel::doEdit() {
     status("学生信息已更新");
 }
 
-/** @brief 删除学生：确认 → 业务层检查未归还图书 → 刷新。 */
+/* @brief 删除学生：确认 → 业务层检查未归还图书 → 刷新。 */
 void StudentPanel::doDel() {
     const int id = UiUtils::selectedId(list_);
     if (id <= 0) {
@@ -694,18 +694,18 @@ void StudentPanel::doDel() {
     status("学生已删除");
 }
 
-/** @brief 「新增」按钮回调。 */
+/* @brief 「新增」按钮回调。 */
 void StudentPanel::onAdd(Fl_Widget*, void* data) { invoke<StudentPanel, &StudentPanel::doAdd>(nullptr, data); }
-/** @brief 「编辑」按钮回调。 */
+/* @brief 「编辑」按钮回调。 */
 void StudentPanel::onEdit(Fl_Widget*, void* data) { invoke<StudentPanel, &StudentPanel::doEdit>(nullptr, data); }
-/** @brief 「删除」按钮回调。 */
+/* @brief 「删除」按钮回调。 */
 void StudentPanel::onDel(Fl_Widget*, void* data) { invoke<StudentPanel, &StudentPanel::doDel>(nullptr, data); }
-/** @brief 「刷新」按钮回调（refresh 为无参成员，可直接套用 invoke 模板）。 */
+/* @brief 「刷新」按钮回调（refresh 为无参成员，可直接套用 invoke 模板）。 */
 void StudentPanel::onRefresh(Fl_Widget*, void* data) { invoke<StudentPanel, &StudentPanel::refresh>(nullptr, data); }
 
 // ==================== ShelfPanel（书架管理页） ====================
 
-/** @brief 构造书架管理页：4 个按钮 + 7 列列表。 */
+/* @brief 构造书架管理页：4 个按钮 + 7 列列表。 */
 ShelfPanel::ShelfPanel(int x, int y, int w, int h,
                        LibraryService& svc, MainWindow* owner)
     : Fl_Group(x, y, w, h, "书架管理"), svc_(svc), owner_(owner) {
@@ -724,7 +724,7 @@ ShelfPanel::ShelfPanel(int x, int y, int w, int h,
     end();
 }
 
-/**
+/*
  * @brief 重载书架列表，展示藏书数与在馆数。
  * @note 数据源为 v_shelf_stat 视图的聚合结果，无需在界面层逐架 COUNT。
  */
@@ -745,12 +745,12 @@ void ShelfPanel::refresh() {
     }
 }
 
-/** @brief 转发消息到主窗口状态栏。 */
+/* @brief 转发消息到主窗口状态栏。 */
 void ShelfPanel::status(const std::string& message) {
     if (owner_) owner_->setStatus(message);
 }
 
-/** @brief 新增书架：模态对话框 → 写库 → 全局刷新。 */
+/* @brief 新增书架：模态对话框 → 写库 → 全局刷新。 */
 void ShelfPanel::doAdd() {
     ShelfDialog dialog{Bookshelf{}};                          ///< 花括号构造避免 vexing parse
     if (!dialog.exec()) return;
@@ -759,7 +759,7 @@ void ShelfPanel::doAdd() {
     status("新增书架成功");
 }
 
-/** @brief 编辑书架：从 ShelfStat 缓存取原实体 → 对话框 → 更新。 */
+/* @brief 编辑书架：从 ShelfStat 缓存取原实体 → 对话框 → 更新。 */
 void ShelfPanel::doEdit() {
     const int id = UiUtils::selectedId(list_);
     if (id <= 0) {
@@ -783,7 +783,7 @@ void ShelfPanel::doEdit() {
     status("书架信息已更新");
 }
 
-/** @brief 删除书架：确认 → 业务层检查藏书数 → 刷新。 */
+/* @brief 删除书架：确认 → 业务层检查藏书数 → 刷新。 */
 void ShelfPanel::doDel() {
     const int id = UiUtils::selectedId(list_);
     if (id <= 0) {
@@ -796,18 +796,18 @@ void ShelfPanel::doDel() {
     status("书架已删除");
 }
 
-/** @brief 「新增」按钮回调。 */
+/* @brief 「新增」按钮回调。 */
 void ShelfPanel::onAdd(Fl_Widget*, void* data) { invoke<ShelfPanel, &ShelfPanel::doAdd>(nullptr, data); }
-/** @brief 「编辑」按钮回调。 */
+/* @brief 「编辑」按钮回调。 */
 void ShelfPanel::onEdit(Fl_Widget*, void* data) { invoke<ShelfPanel, &ShelfPanel::doEdit>(nullptr, data); }
-/** @brief 「删除」按钮回调。 */
+/* @brief 「删除」按钮回调。 */
 void ShelfPanel::onDel(Fl_Widget*, void* data) { invoke<ShelfPanel, &ShelfPanel::doDel>(nullptr, data); }
-/** @brief 「刷新」按钮回调。 */
+/* @brief 「刷新」按钮回调。 */
 void ShelfPanel::onRefresh(Fl_Widget*, void* data) { invoke<ShelfPanel, &ShelfPanel::refresh>(nullptr, data); }
 
 // ==================== LoanPanel（借阅管理页） ====================
 
-/** @brief 构造借阅管理页：两个下拉框、筛选框、三个按钮与借阅记录列表。 */
+/* @brief 构造借阅管理页：两个下拉框、筛选框、三个按钮与借阅记录列表。 */
 LoanPanel::LoanPanel(int x, int y, int w, int h,
                      LibraryService& svc, MainWindow* owner)
     : Fl_Group(x, y, w, h, "借阅管理"), svc_(svc), owner_(owner) {
@@ -834,7 +834,7 @@ LoanPanel::LoanPanel(int x, int y, int w, int h,
     end();
 }
 
-/**
+/*
  * @brief 重建「学生」与「在馆图书」两个下拉框。
  * @note 主要算法（平行数组 + 指针稳定性）：
  *       1) 分别收集显示标签与对应的 ID 数组（下标一一对应）；
@@ -871,7 +871,7 @@ void LoanPanel::refreshChoices() {
     if (!bookIds_.empty()) bookChoice_->value(0);
 }
 
-/**
+/*
  * @brief 按当前筛选条件重载借阅记录列表。
  * @note 算法：把筛选下拉的序号直接映射为 LoanFilter 枚举（0/1/2），
  *       调 Service 取回 LoanDetail（JOIN 已包含学生、图书、书架字段），
@@ -897,12 +897,12 @@ void LoanPanel::refresh() {
     }
 }
 
-/** @brief 转发消息到主窗口状态栏。 */
+/* @brief 转发消息到主窗口状态栏。 */
 void LoanPanel::status(const std::string& message) {
     if (owner_) owner_->setStatus(message);
 }
 
-/**
+/*
  * @brief 借书流程：把两个下拉框的下标还原为 ID，调用业务层并全局刷新。
  * @note 借书成功后必须 refreshAll()：在馆图书下拉、记录列表、统计条都要同步，
  *       否则界面会残留已借出的图书，导致用户重复点击并触发业务异常。
@@ -922,7 +922,7 @@ void LoanPanel::doBorrow() {
     status("借书成功，借期 30 天");
 }
 
-/** @brief 还书流程：解析选中记录 ID → 二次确认 → 业务层事务 → 全局刷新。 */
+/* @brief 还书流程：解析选中记录 ID → 二次确认 → 业务层事务 → 全局刷新。 */
 void LoanPanel::doReturn() {
     const int recordId = UiUtils::selectedId(list_);          ///< 选中行首列即记录 ID
     if (recordId <= 0) {
@@ -935,12 +935,12 @@ void LoanPanel::doReturn() {
     status("还书成功");
 }
 
-/** @brief 「借出」按钮回调。 */
+/* @brief 「借出」按钮回调。 */
 void LoanPanel::onBorrow(Fl_Widget*, void* data) { invoke<LoanPanel, &LoanPanel::doBorrow>(nullptr, data); }
-/** @brief 「还书」按钮回调。 */
+/* @brief 「还书」按钮回调。 */
 void LoanPanel::onReturn(Fl_Widget*, void* data) { invoke<LoanPanel, &LoanPanel::doReturn>(nullptr, data); }
 
-/**
+/*
  * @brief 「刷新」按钮回调：同时重建下拉框与记录列表。
  * @note 单独实现是因为需要依次调用两个成员动作，不便套用单方法 invoke 模板。
  */
@@ -955,12 +955,12 @@ void LoanPanel::onRefresh(Fl_Widget*, void* data) {
     }
 }
 
-/** @brief 「筛选」下拉回调：按新条件重绘列表。 */
+/* @brief 「筛选」下拉回调：按新条件重绘列表。 */
 void LoanPanel::onFilter(Fl_Widget*, void* data) { invoke<LoanPanel, &LoanPanel::refresh>(nullptr, data); }
 
 // ==================== MainWindow（主窗口） ====================
 
-/**
+/*
  * @brief 构造主窗口并组装整棵控件树，最后触发首次数据刷新。
  * @param w,h 窗口尺寸（1024x680）。
  * @param title 窗口标题。
@@ -995,7 +995,7 @@ MainWindow::MainWindow(int w, int h, const char* title, LibraryService& svc)
     refreshAll();                                            ///< 首屏数据装载
 }
 
-/**
+/*
  * @brief 更新底部状态栏。
  * @param message 操作结果或错误原因。
  * @note copy_label 会复制字符串，故可安全传入临时拼接的 c_str()。
@@ -1005,7 +1005,7 @@ void MainWindow::setStatus(const std::string& message) {
     statusBar_->redraw();                                     ///< 立即重绘
 }
 
-/**
+/*
  * @brief 全局刷新：统计条 + 四个页签 + 借阅下拉框。
  * @note 主要算法（保证界面与数据库一致）：
  *       1) 先 refreshOverdue() 批量标记逾期（写操作，幂等）；
@@ -1029,12 +1029,12 @@ void MainWindow::refreshAll() {
     }
 }
 
-/** @brief 「刷新全部」按钮回调。 */
+/* @brief 「刷新全部」按钮回调。 */
 void MainWindow::onRefresh(Fl_Widget*, void* data) {
     static_cast<MainWindow*>(data)->refreshAll();
 }
 
-/** @brief 「关于」按钮回调：显示版本与技术栈信息。 */
+/* @brief 「关于」按钮回调：显示版本与技术栈信息。 */
 void MainWindow::onAbout(Fl_Widget*, void*) {
     fl_message("简易图书借阅系统 V1.0\n\n"
                "C++17 面向对象 · FLTK 1.4.5 图形界面 · SQLite 3 数据库\n"

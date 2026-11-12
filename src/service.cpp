@@ -2,7 +2,7 @@
  * @file service.cpp
  * @brief 业务逻辑层实现：业务规则校验、事务边界编排、组合查询与统计。
  *
- * @section design 设计说明
+ * @par 设计说明
  * - 所属层次：业务逻辑层（Service），是界面层唯一允许调用的下层门面；
  *   对应声明 include/service.h，界面层不得直接访问 DAO，更不能出现 SQL。
  * - 依赖注入：构造函数接收 Database&，并把同一连接注入四个 DAO；
@@ -29,7 +29,7 @@
 
 namespace lls {
 
-/**
+/*
  * @brief 把统计结果格式化为主窗口顶部统计条文本。
  * @return 形如「藏书 1000 册 在馆 800 借出 200 逾期 40 学生 100 书架 20」。
  * @note 用流式拼接避免多处字符串加法；字段顺序与界面控件宽度设计一致。
@@ -42,7 +42,7 @@ std::string Statistics::summary() const {
     return out.str();                                        ///< 转为值语义字符串
 }
 
-/**
+/*
  * @brief 通用实体校验入口（多态落点）。
  * @param entity 任意实体基类引用。
  * @exception ValidationException 实体返回非空错误文本时抛出。
@@ -55,7 +55,7 @@ void LibraryService::checkEntity(const Entity& entity) {
     if (!error.empty()) throw ValidationException(error);    ///< 统一转成异常
 }
 
-/**
+/*
  * @brief 构造业务门面并注入数据库连接。
  * @param db 已打开的连接引用；Service 不接管其生命周期。
  * @note 四个 DAO 共享同一连接，保证后续事务（BEGIN/COMMIT）对所有 DAO 都生效。
@@ -67,7 +67,7 @@ LibraryService::LibraryService(Database& db)
       shelfDao_(db),                                        ///< 书架 DAO
       loanDao_(db) {}                                       ///< 借阅记录 DAO
 
-/**
+/*
  * @brief 系统初始化：建表 → 空库播种 → 批量刷新逾期。
  * @note 算法顺序不可颠倒：先建表才能查询；seedDemoData 内部判定是否为空库；
  *       refreshOverdue 放最后，确保演示数据中的逾期记录被正确标记。
@@ -80,7 +80,7 @@ void LibraryService::initialize() {
 
 // ==================== 图书业务 ====================
 
-/**
+/*
  * @brief 新增图书。
  * @param book 界面采集的图书实体。
  * @return 新记录主键。
@@ -95,7 +95,7 @@ int LibraryService::addBook(const Book& book) {
     return bookDao_.insert(entity);                          ///< 5) 写入并返回主键
 }
 
-/**
+/*
  * @brief 更新图书。
  * @param book 含有效 id 的实体。
  * @note 算法：校验 → 主键合法性 → 确认原记录存在 → 确认新书架存在 → 更新。
@@ -108,7 +108,7 @@ void LibraryService::updateBook(const Book& book) {
     bookDao_.update(book);
 }
 
-/**
+/*
  * @brief 删除图书（带引用预检）。
  * @param id 图书主键。
  * @exception BusinessException 存在未归还借阅记录时抛出。
@@ -123,7 +123,7 @@ void LibraryService::removeBook(int id) {
     if (!bookDao_.removeById(id)) throw NotFoundException("图书不存在");
 }
 
-/**
+/*
  * @brief 列出图书，可按关键字检索。
  * @param keyword 题名/作者/ISBN 关键字；空串表示全部。
  * @return 图书列表。
@@ -135,14 +135,14 @@ std::vector<Book> LibraryService::listBooks(const std::string& keyword) {
                                  : bookDao_.search(keyword);
 }
 
-/** @brief 列出所有在馆图书，供借书页「在馆图书」下拉框使用。 */
+/* @brief 列出所有在馆图书，供借书页「在馆图书」下拉框使用。 */
 std::vector<Book> LibraryService::availableBooks() {
     return bookDao_.availableList();
 }
 
 // ==================== 学生业务 ====================
 
-/**
+/*
  * @brief 新增学生。
  * @param student 待新增实体。
  * @return 新主键。
@@ -156,7 +156,7 @@ int LibraryService::addStudent(const Student& student) {
     return studentDao_.insert(student);
 }
 
-/**
+/*
  * @brief 更新学生。
  * @param student 含有效 id 的实体。
  * @note 唯一性检查时排除自身 ID，否则编辑不改学号也会误报重复。
@@ -170,7 +170,7 @@ void LibraryService::updateStudent(const Student& student) {
     studentDao_.update(student);
 }
 
-/**
+/*
  * @brief 删除学生。
  * @param id 学生主键。
  * @exception BusinessException 尚有未归还图书时拒绝删除（历史已归还记录不阻止删除）。
@@ -182,12 +182,12 @@ void LibraryService::removeStudent(int id) {
     if (!studentDao_.removeById(id)) throw NotFoundException("学生不存在");
 }
 
-/** @brief 列出全部学生。 */
+/* @brief 列出全部学生。 */
 std::vector<Student> LibraryService::listStudents() {
     return studentDao_.listAll();
 }
 
-/**
+/*
  * @brief 查询某学生当前已借册数（界面「已借册数」列的数据源）。
  * @param studentId 学生主键。
  * @return 未归还记录数。
@@ -198,7 +198,7 @@ int LibraryService::activeLoanCount(int studentId) {
 
 // ==================== 书架业务 ====================
 
-/** @brief 新增书架：校验 → 编号唯一性预检 → 插入。 */
+/* @brief 新增书架：校验 → 编号唯一性预检 → 插入。 */
 int LibraryService::addShelf(const Bookshelf& shelf) {
     checkEntity(shelf);
     if (shelfDao_.existsCode(shelf.code(), 0))
@@ -206,7 +206,7 @@ int LibraryService::addShelf(const Bookshelf& shelf) {
     return shelfDao_.insert(shelf);
 }
 
-/** @brief 更新书架：唯一性检查排除自身 ID。 */
+/* @brief 更新书架：唯一性检查排除自身 ID。 */
 void LibraryService::updateShelf(const Bookshelf& shelf) {
     checkEntity(shelf);
     if (shelf.id() <= 0) throw ValidationException("书架 ID 无效");
@@ -216,7 +216,7 @@ void LibraryService::updateShelf(const Bookshelf& shelf) {
     shelfDao_.update(shelf);
 }
 
-/**
+/*
  * @brief 删除书架：书架上仍有藏书时拒绝。
  * @param id 书架主键。
  * @note 先做业务预检再删除，避免直接触发外键 RESTRICT 抛出难以理解的 DbException。
@@ -228,19 +228,19 @@ void LibraryService::removeShelf(int id) {
     if (!shelfDao_.removeById(id)) throw NotFoundException("书架不存在");
 }
 
-/** @brief 列出全部书架（供图书对话框的下拉选项使用）。 */
+/* @brief 列出全部书架（供图书对话框的下拉选项使用）。 */
 std::vector<Bookshelf> LibraryService::listShelves() {
     return shelfDao_.listAll();
 }
 
-/** @brief 读取书架统计（藏书数/在馆数），供书架管理页列表展示。 */
+/* @brief 读取书架统计（藏书数/在馆数），供书架管理页列表展示。 */
 std::vector<ShelfStat> LibraryService::shelfStats() {
     return shelfDao_.listWithStats();
 }
 
 // ==================== 借阅业务（核心流程） ====================
 
-/**
+/*
  * @brief 办理借书。
  * @param studentId 借书学生主键。
  * @param bookId 所借图书主键。
@@ -290,7 +290,7 @@ int LibraryService::borrowBook(int studentId, int bookId) {
     return recordId;                                         ///< 返回新记录号
 }
 
-/**
+/*
  * @brief 办理还书。
  * @param recordId 借阅记录主键。
  * @exception BusinessException 记录已归还或状态已变更。
@@ -310,7 +310,7 @@ void LibraryService::returnBook(int recordId) {
     transaction.commit();                                    ///< 提交
 }
 
-/**
+/*
  * @brief 按筛选条件查询借阅明细。
  * @param filter 全部 / 当前借阅 / 逾期。
  * @return 借阅明细列表。
@@ -321,7 +321,7 @@ std::vector<LoanDetail> LibraryService::listLoans(LoanFilter filter) {
 
 // ==================== 统计与维护 ====================
 
-/**
+/*
  * @brief 汇总首页统计条的 6 项数字。
  * @return Statistics 结构体。
  * @note 主要算法：用**一条 SQL 的 6 个标量子查询**一次性取回全部计数，
@@ -351,7 +351,7 @@ Statistics LibraryService::statistics() {
     return result;
 }
 
-/**
+/*
  * @brief 批量把到期未还记录标记为逾期。
  * @return 本次被标记的记录数，供状态栏提示。
  * @note 在启动时与每次「刷新全部」时调用；DAO 的 UPDATE 幂等，可安全重复执行。

@@ -2,7 +2,7 @@
  * @file domain.cpp
  * @brief 领域模型层实现：枚举文本化、字符串与日期工具、四类实体的不变式校验与状态迁移。
  *
- * @section design 设计说明
+ * @par 设计说明
  * - 所属层次：领域模型层（Domain），是四层架构中唯一不依赖 GUI、Service、DAO 与 SQLite 的一层，
  *   因此可被其它任意层复用，也便于单独做单元测试（tests/smoke_test.cpp 的 TC-01～TC-03）。
  * - 对应声明：include/domain.h。实体属性全部私有，本文件只实现头文件中声明的行为，
@@ -27,7 +27,7 @@
 
 namespace lls {
 
-/**
+/*
  * @brief 把图书状态枚举转换为界面显示的中文文本。
  * @param status 图书状态枚举值。
  * @return 常量字符串指针，生命周期与程序相同，无需释放。
@@ -43,7 +43,7 @@ const char* toString(BookStatus status) noexcept {
     return "未知";                                    ///< 非法枚举值的兜底文案
 }
 
-/**
+/*
  * @brief 把借阅状态枚举转换为界面显示的中文文本。
  * @param status 借阅状态枚举值。
  * @return 常量字符串指针。
@@ -58,7 +58,7 @@ const char* toString(LoanStatus status) noexcept {
     return "未知";                                    ///< 非法枚举值兜底
 }
 
-/**
+/*
  * @brief 去除字符串首尾空白字符。
  * @param text 原始字符串（可能含空格、制表符、回车、换行）。
  * @return 去除首尾空白后的新字符串；全空白时返回空串。
@@ -73,7 +73,7 @@ std::string trim(const std::string& text) {
     return text.substr(begin, end - begin + 1);               ///< 闭区间 [begin, end] 的子串
 }
 
-/**
+/*
  * @brief 判断字符串是否为空或仅含空白。
  * @param text 待判定的字符串。
  * @return true 表示空白；false 表示含有效内容。
@@ -85,7 +85,7 @@ bool isBlank(const std::string& text) {
 
 namespace {  // 仅本编译单元可见的日期内部工具，不暴露到头文件（信息隐藏）
 
-/**
+/*
  * @brief 解析 `YYYY-MM-DD` 文本并填充 std::tm。
  * @param value 待解析的日期字符串。
  * @param out 输出参数：解析成功时写入年/月/日，并置 tm_isdst = -1 让 mktime 自动判定夏令时。
@@ -110,7 +110,7 @@ bool parseDate(const std::string& value, std::tm& out) {
     return true;
 }
 
-/**
+/*
  * @brief 把 std::tm 格式化为 `YYYY-MM-DD` 文本。
  * @param value 已归一化的日期结构。
  * @return 10 字符的日期字符串。
@@ -124,7 +124,7 @@ std::string formatDate(const std::tm& value) {
 
 }  // namespace 匿名命名空间结束
 
-/**
+/*
  * @brief 取得本机当前日期。
  * @return `YYYY-MM-DD` 格式的今天日期。
  * @note 算法：time() 取 Unix 时间戳 → localtime 转本地时区结构 → formatDate 格式化。
@@ -142,7 +142,7 @@ std::string today() {
     return formatDate(local);                                 ///< 格式化为定长日期文本
 }
 
-/**
+/*
  * @brief 对日期做天数加减（支持负数）。
  * @param date 基准日期 `YYYY-MM-DD`。
  * @param days 增加的天数，可为负数（用于生成历史演示数据）。
@@ -170,7 +170,7 @@ std::string addDays(const std::string& date, int days) {
     return formatDate(normalized);                            ///< 输出定长日期文本
 }
 
-/**
+/*
  * @brief 判断日期 lhs 是否早于 rhs。
  * @param lhs 左侧定长日期文本。
  * @param rhs 右侧定长日期文本。
@@ -182,7 +182,7 @@ bool isBefore(const std::string& lhs, const std::string& rhs) {
     return lhs < rhs;                                         ///< 定长文本的字典序即时间序
 }
 
-/**
+/*
  * @brief 取得当前公历年份，用于实体中「出版年」的合法性上界。
  * @return 四位年份整数；异常时返回保守值 2100。
  * @note 算法：取 today() 的前 4 个字符转整数；try/catch 防止极端环境下 stoi 抛异常
@@ -198,7 +198,7 @@ int currentYear() {
 
 // ==================== Book（图书实体） ====================
 
-/**
+/*
  * @brief 校验图书实体的不变式。
  * @return 空串表示合法；否则返回第一条中文错误原因。
  * @note 校验顺序（fail-fast 算法）：ISBN 非空 → 题名非空 → 出版年非负 →
@@ -217,7 +217,7 @@ std::string Book::validate() const {
     return "";                                                ///< 全部通过：空串代表合法
 }
 
-/**
+/*
  * @brief 多态行导出：把图书转为通用表格/日志所需的文本列。
  * @return 7 列文本：ID、ISBN、题名、作者、书架 ID、状态文本、出版年。
  * @note 该函数通过 Entity& 被通用入口调用，体现运行时多态；
@@ -234,7 +234,7 @@ std::vector<std::string> Book::toRow() const {
             std::to_string(publishYear_)};                   ///< 出版年（0 表示未填）
 }
 
-/**
+/*
  * @brief 状态迁移：在馆 → 借出。
  * @exception BusinessException 当前状态不是「在馆」时抛出。
  * @note 领域层只做状态合法性守卫；真正的持久化（更新 books.status 与插入借阅记录）
@@ -245,12 +245,12 @@ void Book::markBorrowed() {
     status_ = BookStatus::Borrowed;                        ///< 迁移到「借出」
 }
 
-/** @brief 状态迁移：任意状态 → 在馆（归还或重新上架）。 */
+/* @brief 状态迁移：任意状态 → 在馆（归还或重新上架）。 */
 void Book::markReturned() {
     status_ = BookStatus::Available;                       ///< 恢复可借状态
 }
 
-/**
+/*
  * @brief 把数据库中的整数状态安全转换为枚举。
  * @param value books.status 列的整数值。
  * @return 对应枚举；越界时回退为「在馆」，防止脏数据导致未定义行为。
@@ -262,7 +262,7 @@ BookStatus Book::statusFromInt(int value) {
 
 // ==================== Student（学生实体） ====================
 
-/**
+/*
  * @brief 校验学生实体的不变式。
  * @return 空串合法；否则首条错误原因。
  * @note 算法：学号、姓名必填；可借上限必须落在 [1, 20]，
@@ -275,7 +275,7 @@ std::string Student::validate() const {
     return "";                                                ///< 合法
 }
 
-/**
+/*
  * @brief 多态行导出：学生 → 7 列文本。
  * @return ID、学号、姓名、专业、电话、可借上限、启用状态中文文本。
  */
@@ -289,7 +289,7 @@ std::vector<std::string> Student::toRow() const {
             active_ ? "启用" : "停用"};                      ///< 布尔状态转中文
 }
 
-/**
+/*
  * @brief 依据当前已借册数判断该学生是否还能借书（纯函数，不查库）。
  *        实现位于头文件：active_ && current < maxBorrow_。
  * @note 业务层在借书前先由 DAO 查询 current，再调用本方法，
@@ -299,7 +299,7 @@ std::vector<std::string> Student::toRow() const {
 
 // ==================== Bookshelf（书架实体） ====================
 
-/**
+/*
  * @brief 向内存聚合列表追加一本藏书 ID。
  * @param id 图书主键。
  * @exception BusinessException 书架已满时抛出。
@@ -312,7 +312,7 @@ void Bookshelf::addBookId(int id) {
     bookIds_.push_back(id);                                   ///< 追加藏书 ID
 }
 
-/**
+/*
  * @brief 校验书架实体的不变式。
  * @return 空串合法；否则首条错误原因。
  */
@@ -323,7 +323,7 @@ std::string Bookshelf::validate() const {
     return "";                                                ///< 合法
 }
 
-/**
+/*
  * @brief 多态行导出：书架 → 6 列文本。
  * @return ID、编号、位置、分类、容量、当前藏书数。
  */
@@ -338,7 +338,7 @@ std::vector<std::string> Bookshelf::toRow() const {
 
 // ==================== BorrowRecord（借阅记录实体） ====================
 
-/**
+/*
  * @brief 判断该借阅记录是否逾期。
  * @param day 判定基准日（通常传 today()）。
  * @return 未归还且应还日早于 day 时返回 true。
@@ -350,7 +350,7 @@ bool BorrowRecord::isOverdue(const std::string& day) const {
            isBefore(dueDate_, day);                          ///< 应还日早于今天
 }
 
-/**
+/*
  * @brief 关闭借阅记录（办理归还）。
  * @param day 归还日期 `YYYY-MM-DD`。
  * @exception BusinessException 重复归还时抛出。
@@ -363,7 +363,7 @@ void BorrowRecord::close(const std::string& day) {
     status_ = LoanStatus::Returned;                          ///< 状态迁移为已归还
 }
 
-/**
+/*
  * @brief 把数据库中的整数状态安全转换为借阅枚举。
  * @param value borrow_records.status 的整数值。
  * @return 对应枚举；越界回退为「借出中」。
@@ -373,7 +373,7 @@ LoanStatus BorrowRecord::statusFromInt(int value) {
     return static_cast<LoanStatus>(value);                    ///< 合法范围直接映射
 }
 
-/**
+/*
  * @brief 校验借阅记录的不变式。
  * @return 空串合法；否则首条错误原因。
  * @note 算法：外键 ID 必须为正 → 借出日与应还日必须是合法定长日期 →
@@ -394,7 +394,7 @@ std::string BorrowRecord::validate() const {
     return "";                                               ///< 合法
 }
 
-/**
+/*
  * @brief 多态行导出：借阅记录 → 8 列文本。
  * @return ID、学生 ID、图书 ID、借出日、应还日、归还日、状态文本、备注。
  */

@@ -5,8 +5,10 @@
 #         doxygen Doxyfile
 # 输出：build/doxygen/html/index.html（该目录已被 .gitignore 排除，不入库）
 #
-# 说明：只索引自写源码与 README。tools/ 下 FLTK + SQLite 共 63 万行
+# 说明：只索引自写源码与 DOC_MAINPAGE.md 主页。tools/ 下 FLTK + SQLite 共 63 万行
 #       第三方源码不扫描，否则生成极慢且图谱不可用。
+#       主页刻意不用 README.md：README 里的相对图片与相对链接会被 Doxygen
+#       当成 \ref / \image 解析并产生警告，故单独维护一份文档专用主页。
 # ============================================================
 
 PROJECT_NAME           = "简易图书借阅系统"
@@ -16,8 +18,8 @@ OUTPUT_LANGUAGE        = Chinese
 INPUT_ENCODING         = UTF-8
 CREATE_SUBDIRS         = NO
 
-INPUT                  = src include README.md
-USE_MDFILE_AS_MAINPAGE = README.md
+INPUT                  = src include DOC_MAINPAGE.md
+USE_MDFILE_AS_MAINPAGE = DOC_MAINPAGE.md
 FILE_PATTERNS          = *.cpp *.h *.md
 RECURSIVE              = YES
 EXCLUDE                = tools build data output docs .git .github

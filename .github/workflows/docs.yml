@@ -1,0 +1,91 @@
+# Build the Chinese Doxygen API reference and publish it to GitHub Pages.
+# One-time setup (needs the repo owner, in the browser):
+#   Settings -> Pages -> Build and deployment -> Source: GitHub Actions
+# After that, every push touching src/, include/, Doxyfile or the mainpage
+# regenerates the site at https://pengtk2026.github.io/library-lending-system/
+name: API Docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'include/**'
+      - 'Doxyfile'
+      - 'DOC_MAINPAGE.md'
+      - '.github/workflows/docs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Doxygen and Graphviz
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends doxygen graphviz
+          doxygen --version
+          dot -V
+
+      - name: Generate Chinese API documentation
+        run: doxygen Doxyfile
+
+      - name: Verify generated site
+        run: |
+          test -f build/doxygen/html/index.html
+          echo "HTML pages : $(find build/doxygen/html -name '*.html' | wc -l)"
+          echo "Diagrams   : $(find build/doxygen/html -name '*.png' | wc -l)"
+          echo "Total files: $(find build/doxygen/html -type f | wc -l)"
+
+      # Pages must be enabled once by the repo owner in Settings -> Pages ->
+      # Source = GitHub Actions. Until then we still build and verify the docs,
+      # but skip deployment so the workflow stays green instead of failing red.
+      - name: Check Pages configuration
+        id: pages_check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          resp=$(curl -s -w '\n%{http_code}' \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/pages")
+          code=$(printf '%s' "$resp" | tail -n1)
+          body=$(printf '%s' "$resp" | sed '$d')
+          build_type=$(printf '%s' "$body" | jq -r '.build_type // "none"')
+          if [ "$code" = "200" ] && [ "$build_type" = "workflow" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+            echo "Pages is configured with GitHub Actions."
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Docs built but not deployed (HTTP $code, build_type=$build_type). Set Settings -> Pages -> Source = GitHub Actions, then re-run this workflow."
+          fi
+
+      - name: Setup Pages
+        if: steps.pages_check.outputs.enabled == 'true'
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        if: steps.pages_check.outputs.enabled == 'true'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/doxygen/html
+
+      - name: Deploy to GitHub Pages
+        if: steps.pages_check.outputs.enabled == 'true'
+        id: deployment
+        uses: actions/deploy-pages@v4

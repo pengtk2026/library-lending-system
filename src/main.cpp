@@ -2,7 +2,7 @@
  * @file main.cpp
  * @brief 程序入口：GUI 启动流程、无界面演示数据生成模式、全局异常兜底与 Win32 入口包装。
  *
- * @section design 设计说明
+ * @par 设计说明
  * - 所属层次：应用层（Application 组装根），负责把四层对象按依赖顺序组装起来：
  *   Database（栈对象，RAII 管理连接）→ LibraryService（引用注入）→ MainWindow（引用注入）
  *   → Fl::run() 进入事件循环。窗口关闭后按构造逆序析构，连接自动释放。
@@ -37,7 +37,7 @@
 
 namespace {  // 匿名命名空间：仅本文件使用的启动函数
 
-/**
+/*
  * @brief 组装对象并运行 GUI 事件循环。
  * @param argc, argv 标准命令行参数，传递给 Fl_Window::show()。
  * @return Fl::run() 的退出码（所有窗口关闭后返回 0）。
@@ -71,7 +71,7 @@ int runApplication(int argc, char** argv) {
 
 }  // namespace 匿名命名空间结束
 
-/**
+/*
  * @brief C/C++ 标准入口。
  * @param argc 参数个数。
  * @param argv 参数数组。
@@ -113,7 +113,7 @@ int main(int argc, char** argv) {
 
 #if defined(_WIN32)
 #include <windows.h>                                         ///< WinMain / HINSTANCE / __argc
-/**
+/*
  * @brief Windows GUI 子系统入口，转调标准 main。
  * @return main() 的退出码。
  * @note CMake 的 WIN32 可执行目标不弹控制台，链接器要求 WinMain 入口；

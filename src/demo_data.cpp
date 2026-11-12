@@ -2,7 +2,7 @@
  * @file demo_data.cpp
  * @brief 可复现的大批量演示数据生成器：1000 册图书 / 100 名学生 / 500 条借阅记录。
  *
- * @section design 设计说明
+ * @par 设计说明
  * - 定位：不是一次性导入脚本，而是系统内置功能；对应声明 include/demo_data.h，
  *   由 DemoDataTool.exe 与 `LibraryApp.exe --generate-demo` 两个入口调用。
  * - 目标规模与构成：
@@ -46,7 +46,7 @@
 namespace lls {
 namespace {  // 匿名命名空间：数据字典与生成辅助函数，仅本文件可见
 
-/** @brief 40 个学科主题，与 5 个变体、5 个分册组合出 1000 个互异题名。 */
+/* @brief 40 个学科主题，与 5 个变体、5 个分册组合出 1000 个互异题名。 */
 const char* const kTopics[] = {
     "C++ 程序设计", "数据结构与算法", "数据库系统原理", "操作系统", "计算机网络",
     "软件工程", "人工智能导论", "Python 数据分析", "编译原理", "计算机组成原理",
@@ -57,43 +57,43 @@ const char* const kTopics[] = {
     "英语写作", "翻译理论与实践", "社会学概论", "法学导论", "心理学基础",
     "教育学原理", "艺术鉴赏", "中外建筑史", "环境科学概论", "大学物理"};
 
-/** @brief 5 种题名变体（案例教程 / 习题精解 / 实践指南 / 研究前沿 / 精读本）。 */
+/* @brief 5 种题名变体（案例教程 / 习题精解 / 实践指南 / 研究前沿 / 精读本）。 */
 const char* const kVariants[] = {"案例教程", "习题精解", "实践指南", "研究前沿", "精读本"};
 
-/** @brief 20 个作者名，用于轮转填充图书作者字段。 */
+/* @brief 20 个作者名，用于轮转填充图书作者字段。 */
 const char* const kAuthors[] = {
     "张先治", "严蔚敏", "周三多", "谭浩强", "王珊", "萨师煊", "谢希仁",
     "汤小丹", "周志华", "李航", "高鸿业", "曼昆", "平狄克", "罗斯",
     "注册会计师协会", "罗宾斯", "科特勒", "盛骤", "同济大学数学系", "袁行霈"};
 
-/** @brief 8 个出版社名称。 */
+/* @brief 8 个出版社名称。 */
 const char* const kPublishers[] = {
     "清华大学出版社", "机械工业出版社", "人民邮电出版社", "电子工业出版社",
     "东北财经大学出版社", "中国人民大学出版社", "高等教育出版社", "人民文学出版社"};
 
-/** @brief 6 个图书/书架分类，与 kTopics 的学科分布大致对应。 */
+/* @brief 6 个图书/书架分类，与 kTopics 的学科分布大致对应。 */
 const char* const kCategories[] = {
     "计算机", "经济管理", "文学", "社会科学", "数理基础", "艺术与综合"};
 
-/** @brief 30 个姓氏，与 kGivenNames 组合成 100 个不重复姓名。 */
+/* @brief 30 个姓氏，与 kGivenNames 组合成 100 个不重复姓名。 */
 const char* const kSurnames[] = {
     "王", "李", "张", "刘", "陈", "杨", "黄", "赵", "周", "吴",
     "徐", "孙", "马", "朱", "胡", "郭", "何", "高", "林", "罗",
     "郑", "梁", "谢", "宋", "唐", "许", "韩", "冯", "邓", "曹"};
 
-/** @brief 40 个名字，配合 30 个姓氏生成 100 个唯一姓名（i = q*30 + r）。 */
+/* @brief 40 个名字，配合 30 个姓氏生成 100 个唯一姓名（i = q*30 + r）。 */
 const char* const kGivenNames[] = {
     "明", "华", "芳", "强", "静", "敏", "秀英", "丽", "磊", "洋",
     "艳", "勇", "军", "杰", "娟", "涛", "超", "秀兰", "霞", "平",
     "刚", "桂英", "文", "辉", "娜", "健", "俊", "宇", "欣", "悦",
     "琳", "睿", "嘉", "宁", "彤", "昊", "然", "晨", "曦", "桐"};
 
-/** @brief 8 个专业名称，用于学生专业班级字段。 */
+/* @brief 8 个专业名称，用于学生专业班级字段。 */
 const char* const kMajors[] = {
     "经济学", "人力资源管理", "工商管理", "信息管理",
     "会计学", "金融学", "市场营销", "数据科学"};
 
-/**
+/*
  * @brief 把整数格式化为定宽、左侧补零的字符串。
  * @param value 待格式化整数。
  * @param width 目标宽度。
@@ -106,7 +106,7 @@ std::string pad(int value, int width) {
     return out.str();
 }
 
-/**
+/*
  * @brief 生成带合法校验位的 EAN-13 ISBN。
  * @param index 图书序号 0..999。
  * @return 13 位数字字符串。
@@ -129,7 +129,7 @@ std::string makeIsbn(int index) {
     return prefix + std::to_string((10 - sum % 10) % 10);    ///< 拼上校验位
 }
 
-/**
+/*
  * @brief 生成互不重复的图书题名。
  * @param index 图书序号 0..999。
  * @return 形如「C++ 程序设计 · 案例教程 · 第1分册」。
@@ -145,12 +145,12 @@ std::string makeTitle(int index) {
     return title;
 }
 
-/** @brief 生成 11 位演示手机号：固定 138 段 + 8 位确定性序号。 */
+/* @brief 生成 11 位演示手机号：固定 138 段 + 8 位确定性序号。 */
 std::string makePhone(int index) {
     return "138" + pad((10000000 + index * 7919) % 100000000, 8);  ///< 7919 为质数，分散度好
 }
 
-/**
+/*
  * @brief 执行返回单个整数的 SQL（一致性校验的计数查询）。
  * @param db 数据库连接。
  * @param sql 返回一行一列的 SELECT。
@@ -161,7 +161,7 @@ int scalar(Database& db, const std::string& sql) {
     return statement.step() ? statement.columnInt(0) : 0;    ///< 读取首列
 }
 
-/**
+/*
  * @brief 生成一致性校验报告文本。
  * @param db 已生成数据的连接。
  * @param report 输出流，追加 PASS/FAIL 明细。
@@ -204,7 +204,7 @@ bool consistencyChecks(Database& db, std::ostringstream& report) {
 
 }  // namespace 匿名命名空间结束
 
-/**
+/*
  * @brief 生成单行规模摘要（用于控制台输出）。
  * @return 如「书架 20 / 学生 100 / 图书 1000（在馆 800，借出 200）…」。
  */
@@ -216,7 +216,7 @@ std::string DemoDataReport::summary() const {
     return out.str();
 }
 
-/**
+/*
  * @brief 生成多行详细报告（写入 data/demo_data_report.txt）。
  * @return 含生成时间、各类数量与未还/已还拆分的文本。
  * @note 「当前未还」= borrowed（借出图书数），「历史已归还」= loans - borrowed，
@@ -238,7 +238,7 @@ std::string DemoDataReport::detail() const {
     return out.str();
 }
 
-/**
+/*
  * @brief 对外暴露的一致性校验入口。
  * @param db 已生成数据的连接。
  * @return 可读的 PASS/FAIL 报告文本。
@@ -249,7 +249,7 @@ std::string DemoDataGenerator::verify(Database& db) {
     return out.str();
 }
 
-/**
+/*
  * @brief 重建全部业务数据（核心生成流程）。
  * @param db 已打开的连接。
  * @param books 目标图书数（当前调用为 1000）。
@@ -301,7 +301,7 @@ DemoDataReport DemoDataGenerator::generate(Database& db, int books,
     for (int i = 1; i <= students; ++i)
         maxBorrow[i] = 3 + ((i - 1) % 6);                    ///< 上限 3..8 循环分布
 
-    /**
+    /*
      * @brief 按「轮转 + 上限检查」挑选一个可再借的学生。
      * @param seed 起始偏移，使分配尽量均匀。
      * @return 学生 ID。

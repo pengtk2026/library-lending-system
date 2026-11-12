@@ -2,7 +2,7 @@
  * @file domain.h
  * @brief 领域模型层声明：枚举、工具函数、异常体系、Entity 抽象基类与四类业务实体。
  *
- * @section design 设计说明
+ * @par 设计说明
  * - 所属层次：领域模型层（Domain），四层架构的最内层；**不依赖** GUI、Service、DAO 或 SQLite，
  *   只使用 C++ 标准库，因此可被任意上层复用并可单独做单元测试。
  * - 实现位置：`src/domain.cpp`（非内联函数的实现）；本头文件只放声明与短小内联函数。

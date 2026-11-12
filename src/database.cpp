@@ -2,7 +2,7 @@
  * @file database.cpp
  * @brief 数据访问层实现：SQLite C API 的 RAII 封装、预编译语句、事务、建表与小规模演示数据。
  *
- * @section design 设计说明
+ * @par 设计说明
  * - 所属层次：数据访问层（DAO 基础设施），向下封装 sqlite3 C API，向上为四个 DAO 提供
  *   Database / Statement / Transaction 三个 RAII 类型，禁止业务层直接接触 sqlite3*。
  * - 对应声明：include/database.h；字段与 DDL 全文另见《详细设计说明书》第 4 章。
@@ -38,7 +38,7 @@ namespace lls {
 
 // ==================== Statement（预编译语句 RAII 封装） ====================
 
-/**
+/*
  * @brief 预编译一条 SQL 语句。
  * @param db 已打开的 sqlite3 连接句柄。
  * @param sql 待编译的 SQL 文本（可含 ? 占位符）。
@@ -57,12 +57,12 @@ Statement::Statement(sqlite3* db, const std::string& sql) : sql_(sql) {
     }
 }
 
-/** @brief 析构：释放语句句柄。finalize 失败无需处理，因为对象即将消亡。 */
+/* @brief 析构：释放语句句柄。finalize 失败无需处理，因为对象即将消亡。 */
 Statement::~Statement() {
     if (stmt_) sqlite3_finalize(stmt_);                      ///< 释放预编译语句
 }
 
-/**
+/*
  * @brief 移动构造：接管另一个语句对象的句柄所有权。
  * @param other 源对象，移动后其 stmt_ 置空，析构时不会重复释放。
  * @note 算法：指针转移 + 源置空（move-and-null），是 RAII 类型的标准移动语义实现，
@@ -74,7 +74,7 @@ Statement::Statement(Statement&& other) noexcept
     other.stmt_ = nullptr;                                  ///< 源对象放弃所有权
 }
 
-/**
+/*
  * @brief 移动赋值：先释放自身资源，再接管对方资源。
  * @param other 源对象。
  * @return 自身引用，支持链式赋值。
@@ -89,7 +89,7 @@ Statement& Statement::operator=(Statement&& other) noexcept {
     return *this;
 }
 
-/**
+/*
  * @brief 绑定整型参数。
  * @param index 占位符下标，从 1 开始（SQLite 约定）。
  * @param value 待绑定的整数。
@@ -101,7 +101,7 @@ Statement& Statement::bindInt(int index, int value) {
     return *this;
 }
 
-/**
+/*
  * @brief 绑定 UTF-8 文本参数。
  * @param index 占位符下标，从 1 开始。
  * @param value 待绑定字符串（中文按 UTF-8 传入）。
@@ -116,7 +116,7 @@ Statement& Statement::bindText(int index, const std::string& value) {
     return *this;
 }
 
-/**
+/*
  * @brief 绑定 SQL NULL。
  * @param index 占位符下标，从 1 开始。
  * @return 自身引用。
@@ -128,7 +128,7 @@ Statement& Statement::bindNull(int index) {
     return *this;
 }
 
-/**
+/*
  * @brief 推进一步语句执行。
  * @return true 表示取到一行结果（SQLITE_ROW）；false 表示执行完毕（SQLITE_DONE）。
  * @exception DbException 约束冲突、数据库锁、磁盘错误等。
@@ -143,13 +143,13 @@ bool Statement::step() {
     throw DbException("SQL 执行失败：" + message + "\n" + sql_);
 }
 
-/** @brief 执行无结果集的语句（INSERT/UPDATE/DELETE/DDL），循环 step 直到 DONE。 */
+/* @brief 执行无结果集的语句（INSERT/UPDATE/DELETE/DDL），循环 step 直到 DONE。 */
 void Statement::execute() {
     while (step()) {                                         ///< 忽略任何返回行，跑到结束
     }
 }
 
-/**
+/*
  * @brief 读取当前行的整型列。
  * @param column 列下标，从 0 开始（与绑定的 1 起始不同）。
  * @return 列值；NULL 会被 SQLite 转为 0。
@@ -158,7 +158,7 @@ int Statement::columnInt(int column) const {
     return sqlite3_column_int(stmt_, column);
 }
 
-/**
+/*
  * @brief 读取当前行的文本列。
  * @param column 列下标，从 0 开始。
  * @return UTF-8 字符串；SQL NULL 返回空串。
@@ -169,7 +169,7 @@ std::string Statement::columnText(int column) const {
                  : std::string();                           ///< NULL 统一转空串
 }
 
-/**
+/*
  * @brief 判断当前行的某列是否为 SQL NULL。
  * @param column 列下标，从 0 开始。
  * @return true 表示 NULL。
@@ -179,7 +179,7 @@ bool Statement::columnIsNull(int column) const {
     return sqlite3_column_type(stmt_, column) == SQLITE_NULL;
 }
 
-/**
+/*
  * @brief 复位语句以便复用（批量插入演示数据时显著减少 SQL 编译次数）。
  * @note 算法：sqlite3_reset 回到初始状态，sqlite3_clear_bindings 清空上次绑定，
  *       之后即可重新 bind 并执行；静态库句柄仍归本对象所有。
@@ -191,7 +191,7 @@ void Statement::reset() {
 
 // ==================== Transaction（RAII 事务） ====================
 
-/**
+/*
  * @brief 开启事务。
  * @param db 数据库连接引用（不持有所有权）。
  * @note 使用 BEGIN IMMEDIATE 而非 BEGIN DEFERRED：提前取得写锁，
@@ -201,7 +201,7 @@ Transaction::Transaction(Database& db) : db_(db) {
     db_.exec("BEGIN IMMEDIATE;");
 }
 
-/**
+/*
  * @brief 析构：未提交则自动回滚。
  * @note 主要算法（异常安全）：正常路径由 commit() 把 committed_ 置 true；
  *       若中途抛异常，栈展开触发本析构，执行 ROLLBACK 把借阅记录与图书状态一起撤销。
@@ -218,7 +218,7 @@ Transaction::~Transaction() {
     }
 }
 
-/** @brief 提交事务并标记为已完成，之后析构不再回滚。 */
+/* @brief 提交事务并标记为已完成，之后析构不再回滚。 */
 void Transaction::commit() {
     db_.exec("COMMIT;");
     committed_ = true;
@@ -226,17 +226,17 @@ void Transaction::commit() {
 
 // ==================== Database（连接封装） ====================
 
-/** @brief 便捷构造：直接打开指定路径的数据库文件。 */
+/* @brief 便捷构造：直接打开指定路径的数据库文件。 */
 Database::Database(const std::string& path) {
     open(path);
 }
 
-/** @brief 析构：关闭连接，释放 SQLite 持有的文件句柄与 WAL 资源。 */
+/* @brief 析构：关闭连接，释放 SQLite 持有的文件句柄与 WAL 资源。 */
 Database::~Database() {
     close();
 }
 
-/**
+/*
  * @brief 打开（或创建）SQLite 数据库并完成连接级配置。
  * @param path 数据库文件路径，如 "data/library.db"。
  * @exception DbException 打开失败时抛出。
@@ -271,7 +271,7 @@ void Database::open(const std::string& path) {
     exec("PRAGMA journal_mode = WAL;");                       ///< 写前日志，提升并发读性能
 }
 
-/** @brief 幂等关闭连接；置空指针保证析构与显式调用不冲突。 */
+/* @brief 幂等关闭连接；置空指针保证析构与显式调用不冲突。 */
 void Database::close() noexcept {
     if (db_) {
         sqlite3_close(db_);
@@ -279,7 +279,7 @@ void Database::close() noexcept {
     }
 }
 
-/**
+/*
  * @brief 执行一条或多条不含参数的 SQL（DDL / PRAGMA / 批量脚本）。
  * @param sql SQL 文本，可包含分号分隔的多条语句。
  * @exception DbException 执行失败时抛出，并附带 SQLite 错误与原始 SQL。
@@ -296,7 +296,7 @@ void Database::exec(const std::string& sql) const {
     }
 }
 
-/**
+/*
  * @brief 预编译参数化 SQL 并返回可移动的 Statement。
  * @param sql 含 ? 占位符的 SQL。
  * @return Statement 对象（移动语义，无拷贝开销）。
@@ -306,17 +306,17 @@ Statement Database::prepare(const std::string& sql) const {
     return Statement(db_, sql);
 }
 
-/** @brief 返回最近一次 INSERT 生成的自增主键（DAO::insert 用它回填实体 ID）。 */
+/* @brief 返回最近一次 INSERT 生成的自增主键（DAO::insert 用它回填实体 ID）。 */
 long long Database::lastInsertId() const noexcept {
     return db_ ? sqlite3_last_insert_rowid(db_) : 0;
 }
 
-/** @brief 返回最近一条 SQL 影响的行数（用于判断删除/更新是否命中）。 */
+/* @brief 返回最近一条 SQL 影响的行数（用于判断删除/更新是否命中）。 */
 int Database::changes() const noexcept {
     return db_ ? sqlite3_changes(db_) : 0;
 }
 
-/** @brief 返回连接最近一次错误文本，供日志与诊断使用。 */
+/* @brief 返回连接最近一次错误文本，供日志与诊断使用。 */
 std::string Database::lastError() const {
     return db_ ? std::string(sqlite3_errmsg(db_))
                : std::string("数据库未打开");
@@ -325,7 +325,7 @@ std::string Database::lastError() const {
 // ==================== DbInitializer（模式与基础演示数据） ====================
 namespace {
 
-/**
+/*
  * @brief 完整数据库模式脚本（幂等）。
  * @design 4 张业务表：
  *   - bookshelves：书架，code UNIQUE，capacity > 0；
@@ -414,7 +414,7 @@ LEFT JOIN books b ON b.shelf_id = sh.id
 GROUP BY sh.id, sh.code, sh.location, sh.category, sh.capacity, sh.remark;
 )SQL";
 
-/** @brief 基础演示数据：3 个书架。shelf_id 用子查询按 code 取，避免硬编码自增 ID。 */
+/* @brief 基础演示数据：3 个书架。shelf_id 用子查询按 code 取，避免硬编码自增 ID。 */
 const char* const kDemoShelves = R"SQL(
 INSERT INTO bookshelves(code, location, category, capacity, remark) VALUES
  ('A-01','一层东侧','文学',30,'文学类藏书'),
@@ -422,7 +422,7 @@ INSERT INTO bookshelves(code, location, category, capacity, remark) VALUES
  ('B-01','二层西侧','经济管理',30,'经管类藏书');
 )SQL";
 
-/** @brief 基础演示数据：4 名学生，其中赵强 active=0 用于演示「停用学生禁借」。 */
+/* @brief 基础演示数据：4 名学生，其中赵强 active=0 用于演示「停用学生禁借」。 */
 const char* const kDemoStudents = R"SQL(
 INSERT INTO students(student_no, name, major, phone, max_borrow, active) VALUES
  ('20240001','张明','经济学 2024 级','13800000001',5,1),
@@ -431,7 +431,7 @@ INSERT INTO students(student_no, name, major, phone, max_borrow, active) VALUES
  ('20240004','赵强','信息管理 2022 级','13800000004',5,0);
 )SQL";
 
-/** @brief 基础演示数据：8 册图书，日期用 SQLite date() 生成，保证与本机时区一致。 */
+/* @brief 基础演示数据：8 册图书，日期用 SQLite date() 生成，保证与本机时区一致。 */
 const char* const kDemoBooks = R"SQL(
 INSERT INTO books(isbn,title,author,publisher,publish_year,category,shelf_id,status,added_at)
 VALUES
@@ -453,7 +453,7 @@ VALUES
    (SELECT id FROM bookshelves WHERE code='A-02'),0,date('now','localtime'));
 )SQL";
 
-/**
+/*
  * @brief 基础演示数据：2 条借阅记录（1 条正常、1 条逾期），并把对应图书置为借出。
  * @note 借出日、应还日全部用 date('now','localtime',...)，与领域层 today() 口径一致；
  *       最后一条 UPDATE 保证 books.status 与未归还记录严格对应。
@@ -468,7 +468,7 @@ UPDATE books SET status = 1 WHERE id IN (1, 4);
 
 }  // namespace 匿名命名空间结束
 
-/**
+/*
  * @brief 创建/升级数据库模式。
  * @param db 已打开的连接。
  * @note 全部 SQL 幂等，故 GUI 每次启动、DemoDataTool 每次生成都可安全调用。
@@ -477,7 +477,7 @@ void DbInitializer::createSchema(Database& db) {
     db.exec(kSchema);
 }
 
-/**
+/*
  * @brief 空库时写入基础演示数据。
  * @param db 已打开且已建表的连接。
  * @note 主要算法（幂等 + 原子性）：

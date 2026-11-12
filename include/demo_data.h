@@ -2,7 +2,7 @@
  * @file demo_data.h
  * @brief 可复现的大批量演示数据生成器声明与统计报告结构。
  *
- * @section design 设计说明
+ * @par 设计说明
  * - 定位：系统内置功能，不是一次性外部脚本；实现见 `src/demo_data.cpp`，
  *   由 `DemoDataTool.exe` 与 `LibraryApp.exe --generate-demo` 两个入口调用。
  * - 目标规模：20 书架 / 1000 图书 / 100 学生 / 500 借阅记录

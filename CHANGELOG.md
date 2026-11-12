@@ -8,6 +8,13 @@
 
 - `Doxyfile` 与 `gen_docs.bat`：一键生成带类图 / 调用图的中文 API 文档（需本机安装 Doxygen + Graphviz，脚本内含默认便携路径）
 - 本地生成 `compile_commands.json`（CMake `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON`，不入库），供 clangd / VS Code 精确跳转
+- `DOC_MAINPAGE.md`：Doxygen 专用中文主页；README 继续保留相对图片与链接供 GitHub 渲染
+- `.github/workflows/docs.yml`：源码变更后自动生成文档并发布到 GitHub Pages，README 增加在线 API 文档入口与徽章
+
+### 修复
+
+- **Doxygen 警告从 170 条降为 0 条**：`src/*.cpp` 中与头文件重复的函数文档块降级为普通注释（文字一字未删，API 文档仍以 `include/*.h` 为准）、14 处 `@section design` 改为 `@par`、注释内 `'\t'` 改为中文描述、README 相对链接不再参与文档解析
+- 生成的文档仍完整：163 个 HTML、491 张类图 / 调用图，中文输出正常
 
 ### 计划中
 

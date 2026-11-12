@@ -2,7 +2,7 @@
  * @file service.h
  * @brief 业务逻辑层门面声明：统计结构、业务规则校验、事务编排与组合查询接口。
  *
- * @section design 设计说明
+ * @par 设计说明
  * - 所属层次：业务逻辑层（Service），是界面层唯一允许调用的下层门面；
  *   实现见 `src/service.cpp`。界面层不得直接访问 DAO，更不能出现 SQL。
  * - 依赖注入：`LibraryService` 构造时接收 `Database&`，并把同一连接注入四个 DAO，

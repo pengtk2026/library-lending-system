@@ -42,12 +42,14 @@ required = [
     "docs/概要设计说明书.docx", "docs/详细设计说明书.docx",
     "docs/项目源码导读.docx",
     "docs/screenshots/books-tab.png", "docs/screenshots/overview.png",
+    "Doxyfile", "DOC_MAINPAGE.md", "gen_docs.bat",
     "tools/fltk-1.4.5/CMakeLists.txt", "tools/fltk-1.4.5/COPYING",
     "tools/sqlite-amalgamation-3540100/sqlite3.c",
     "tools/sqlite-amalgamation-3540100/sqlite3.h",
     ".github/ISSUE_TEMPLATE.md", ".github/ISSUE_TEMPLATE/bug_report.md",
     ".github/ISSUE_TEMPLATE/feature_request.md",
     ".github/pull_request_template.md", ".github/workflows/ci.yml",
+    ".github/workflows/docs.yml",
 ]
 for path in required:
     check(os.path.isfile(os.path.join(ROOT, path)), "exists: " + path)

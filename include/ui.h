@@ -2,7 +2,7 @@
  * @file ui.h
  * @brief 表现层声明：通用工具、模态输入对话框、四个功能面板与主窗口。
  *
- * @section design 设计说明
+ * @par 设计说明
  * - 所属层次：表现层（UI），**唯一包含 FLTK 头文件**的项目头文件；实现见 `src/ui.cpp`。
  *   界面只依赖 `LibraryService`，不得直接访问 DAO 或拼接 SQL。
  * - 控件树：`MainWindow(Fl_Double_Window)` → 顶部统计条 + `Fl_Tabs`（四个 `Fl_Group` 页签）
@@ -13,7 +13,7 @@
  * - 回调约定：所有事件回调为 `static void (Fl_Widget*, void*)`，
  *   注册时把 `this` 作为 void* 传入，回调内 `static_cast` 还原；
  *   `src/ui.cpp` 的 `invoke<Panel, Method>()` 模板为所有回调提供统一异常边界。
- * - 列表约定：`Fl_Hold_Browser` 以 '\t' 分列、'@' 为格式符；
+ * - 列表约定：`Fl_Hold_Browser` 以 制表符（Tab） 分列、'@' 为格式符；
  *   第 1 行是表头，数据行首列恒为数据库主键，`UiUtils::selectedId()` 据此还原 ID。
  * - 中文显示：由 `src/main.cpp` 在控件创建前把 FL_HELVETICA 四个变体映射到「Microsoft YaHei」。
  *
@@ -87,7 +87,7 @@ public:
      * @param browser 列表控件。
      * @return 首列 ID；未选中、选中表头或解析失败返回 0。
      * @note 算法：行号从 1 开始且第 1 行是表头，故 line<=1 无效；
-     *       取 text(line) 后按首个 '\t' 切出首列再 stoi。
+     *       取 text(line) 后按首个 制表符（Tab） 切出首列再 stoi。
      */
     static int selectedId(Fl_Hold_Browser* browser);
     /**
@@ -100,7 +100,7 @@ public:
     /**
      * @brief 用制表符把多列文本拼成一行。
      * @param columns 各列文本。
-     * @return 以 '\t' 分隔的行文本。
+     * @return 以 制表符（Tab） 分隔的行文本。
      */
     static std::string join(const std::vector<std::string>& columns);
 };

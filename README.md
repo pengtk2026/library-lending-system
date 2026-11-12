@@ -1,6 +1,6 @@
 # 简易图书借阅系统（C++17 / FLTK / SQLite）
 
-[![C++17](https://img.shields.io/badge/C%2B%2B-17-00599C.svg)](https://isocpp.org/) [![FLTK 1.4.5](https://img.shields.io/badge/FLTK-1.4.5-2E8B57.svg)](https://www.fltk.org/) [![SQLite 3.54.1](https://img.shields.io/badge/SQLite-3.54.1-lightgrey.svg)](https://www.sqlite.org/) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Chinese docs](https://img.shields.io/badge/docs-Chinese-orange.svg)](docs/) [![Repository checks](https://github.com/pengtk2026/library-lending-system/actions/workflows/ci.yml/badge.svg)](https://github.com/pengtk2026/library-lending-system/actions/workflows/ci.yml)
+[![C++17](https://img.shields.io/badge/C%2B%2B-17-00599C.svg)](https://isocpp.org/) [![FLTK 1.4.5](https://img.shields.io/badge/FLTK-1.4.5-2E8B57.svg)](https://www.fltk.org/) [![SQLite 3.54.1](https://img.shields.io/badge/SQLite-3.54.1-lightgrey.svg)](https://www.sqlite.org/) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Chinese docs](https://img.shields.io/badge/docs-Chinese-orange.svg)](docs/) [![Repository checks](https://github.com/pengtk2026/library-lending-system/actions/workflows/ci.yml/badge.svg)](https://github.com/pengtk2026/library-lending-system/actions/workflows/ci.yml) [![API Docs](https://img.shields.io/badge/API-Doxygen-blueviolet.svg)](https://pengtk2026.github.io/library-lending-system/)
 
 **一个程序、四个模块、零第三方运行时依赖**：图书 / 学生 / 书架 / 借阅全流程管理，全中文界面，单文件 SQLite 数据库，**clone 后一条命令即可编译运行**。
 
@@ -24,6 +24,7 @@
 | **想自己编译** | 本机装好 MinGW-w64 + CMake + Ninja 后双击 `build.bat`，约 3～5 分钟生成 `build/cmake/LibraryApp.exe` |
 | **想看完整数据** | 运行 `generate_demo.bat` 生成 1000 册图书 / 100 名学生 / 500 条借阅记录 |
 | **想读设计** | 直接看 `docs/` 下三份中文说明书，或 [项目源码导读](docs/项目源码导读.docx) |
+| **想看源码 API** | 打开 [在线 API 文档](https://pengtk2026.github.io/library-lending-system/)，或本地双击 `gen_docs.bat` 生成 |
 
 > 仓库内不含 exe 二进制；FLTK 与 SQLite 源码已内置，详见下方「构建」章节与 [第三方源码说明](tools/THIRD_PARTY_NOTICES.md)。
 
@@ -34,6 +35,7 @@
 | [概要设计说明书](docs/概要设计说明书.docx) | 需求、架构、类模型、数据库、界面、追溯矩阵 |
 | [详细设计说明书](docs/详细设计说明书.docx) | 类签名、完整 DDL、DAO SQL、控件与回调、算法、测试用例 |
 | [项目源码导读](docs/项目源码导读.docx) | 四层源码 + SQLite / FLTK 源码解析与行号索引 |
+| **[在线 API 文档](https://pengtk2026.github.io/library-lending-system/)** | Doxygen 自动生成的类索引、函数说明、类图与调用图，随源码提交自动更新 |
 | [CHANGELOG.md](CHANGELOG.md) | 版本变更记录 |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | 开发环境、代码约定与提交规范 |
 
@@ -158,7 +160,11 @@ DDL 全文见《详细设计说明书》第 4 章，也在 `src/database.cpp` �
 主要算法（借书事务、日期归一化、ISBN 校验位、列表渲染、演示数据生成与一致性自检）
 均附步骤化说明。共 570 个函数级文档块（src 232 + include 338）。
 
-安装 Doxygen 与 Graphviz 后，在项目根目录执行 `doxygen Doxyfile`，即可在 `build/doxygen/html/index.html` 生成带类图、调用图的可浏览中文 API 文档。配置已排除 `tools/` 下的第三方源码，只索引本项目代码。
+安装 Doxygen 与 Graphviz 后，在项目根目录执行 `doxygen Doxyfile`（Windows 下可双击 `gen_docs.bat`），即可在 `build/doxygen/html/index.html` 生成带类图、调用图的可浏览中文 API 文档。配置已排除 `tools/` 下的第三方源码，只索引本项目代码。
+
+**在线版本**：仓库通过 `.github/workflows/docs.yml` 在每次源码变更后自动生成并发布到 [GitHub Pages](https://pengtk2026.github.io/library-lending-system/)，无需本地安装任何工具即可查阅。
+
+> 文档约定两点：① **API 文档以 `include/*.h` 的声明注释为准**，`src/*.cpp` 里同样详细的说明使用普通注释（文字保留），避免 Doxygen 把声明与实现的 `@param` 合并成重复文档；② `Doxyfile` 使用 [DOC_MAINPAGE.md](DOC_MAINPAGE.md) 作为专用主页，README 里的相对图片与相对链接留给 GitHub 渲染，不参与文档生成。这样文档生成可保持 **0 警告**。
 
 ## 常见问题
 

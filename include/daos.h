@@ -2,7 +2,7 @@
  * @file daos.h
  * @brief 数据访问对象（DAO）声明与两个只读展示结构体。
  *
- * @section design 设计说明
+ * @par 设计说明
  * - 所属层次：数据访问层，是**唯一允许出现 SQL**的层；实现见 `src/daos.cpp`。
  *   界面层与业务层只通过这里声明的接口取数，不接触 sqlite3 C API。
  * - 继承与复用：`Dao<T>` 是模板基类，统一 insert / update / removeById / findById / listAll 契约，

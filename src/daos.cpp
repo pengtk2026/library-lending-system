@@ -2,7 +2,7 @@
  * @file daos.cpp
  * @brief 数据访问层实现：四个 DAO 的 SQL 语句、参数绑定与「结果行 → 领域对象」映射。
  *
- * @section design 设计说明
+ * @par 设计说明
  * - 所属层次：数据访问层（DAO），是唯一允许出现 SQL 的层；
  *   对应声明 include/daos.h，SQL 与列清单集中在匿名命名空间，避免散落到业务/界面代码。
  * - 继承与复用：四个 DAO 公有继承模板基类 Dao<T>（见 daos.h），
@@ -30,26 +30,26 @@
 namespace lls {
 namespace {  // 匿名命名空间：SQL 常量与映射函数仅本编译单元可见（信息隐藏）
 
-/** @brief 图书查询的标准列清单（10 列），别名 b 便于后续 JOIN 与 ORDER BY。 */
+/* @brief 图书查询的标准列清单（10 列），别名 b 便于后续 JOIN 与 ORDER BY。 */
 const char* const kBookColumns =
     "SELECT b.id,b.isbn,b.title,b.author,b.publisher,b.publish_year,"
     "b.category,b.shelf_id,b.status,b.added_at FROM books b ";
-/** @brief 学生查询的标准列清单（7 列）。 */
+/* @brief 学生查询的标准列清单（7 列）。 */
 const char* const kStudentColumns =
     "SELECT id,student_no,name,major,phone,max_borrow,active FROM students ";
-/** @brief 书架查询的标准列清单（6 列）。 */
+/* @brief 书架查询的标准列清单（6 列）。 */
 const char* const kShelfColumns =
     "SELECT id,code,location,category,capacity,remark FROM bookshelves ";
-/** @brief 借阅记录查询的标准列清单（8 列）。 */
+/* @brief 借阅记录查询的标准列清单（8 列）。 */
 const char* const kLoanColumns =
     "SELECT id,student_id,book_id,borrow_date,due_date,return_date,status,remark "
     "FROM borrow_records ";
-/** @brief 借阅明细视图列清单（13 列），供借阅管理页一次取齐展示字段。 */
+/* @brief 借阅明细视图列清单（13 列），供借阅管理页一次取齐展示字段。 */
 const char* const kDetailColumns =
     "SELECT record_id,student_id,student_no,student_name,book_id,isbn,title,"
     "shelf_code,borrow_date,due_date,return_date,status,remark FROM v_loan_detail ";
 
-/**
+/*
  * @brief 把查询结果当前行映射为 Book 实体。
  * @param statement 已 step() 到 SQLITE_ROW 的语句。
  * @return 值语义的 Book 对象。
@@ -70,7 +70,7 @@ Book mapBook(Statement& statement) {
     return book;
 }
 
-/**
+/*
  * @brief 把当前行映射为 Student 实体。
  * @param statement 已定位到结果行的语句。
  * @return Student 对象。
@@ -88,7 +88,7 @@ Student mapStudent(Statement& statement) {
     return student;
 }
 
-/**
+/*
  * @brief 把当前行映射为 Bookshelf 实体。
  * @param statement 已定位到结果行的语句。
  * @return Bookshelf 对象。
@@ -105,7 +105,7 @@ Bookshelf mapShelf(Statement& statement) {
     return shelf;
 }
 
-/**
+/*
  * @brief 把当前行映射为 BorrowRecord 实体。
  * @param statement 已定位到结果行的语句。
  * @return BorrowRecord 对象。
@@ -127,7 +127,7 @@ BorrowRecord mapLoan(Statement& statement) {
     return record;
 }
 
-/**
+/*
  * @brief 把视图当前行映射为 LoanDetail（含领域对象 + 展示字段）。
  * @param statement 已定位到 v_loan_detail 结果行的语句。
  * @return LoanDetail 对象。
@@ -161,7 +161,7 @@ LoanDetail mapDetail(Statement& statement) {
 
 // ==================== BookDao（books 表） ====================
 
-/**
+/*
  * @brief 插入一册图书。
  * @param book 待插入实体（id 应为 0）。
  * @return 新记录的自增主键。
@@ -185,7 +185,7 @@ int BookDao::insert(const Book& book) {
     return static_cast<int>(db_.lastInsertId());             ///< 返回新主键
 }
 
-/**
+/*
  * @brief 全字段更新图书。
  * @param book 含有效 id 的实体。
  * @note 先 requirePersisted 守卫 id > 0；最后一列为 WHERE id=?，防止全表更新。
@@ -209,7 +209,7 @@ void BookDao::update(const Book& book) {
     statement.execute();
 }
 
-/**
+/*
  * @brief 按主键删除图书。
  * @param id 图书主键。
  * @return 是否真的删除了记录。
@@ -222,7 +222,7 @@ bool BookDao::removeById(int id) {
     return db_.changes() > 0;                                ///< 影响行数 > 0 才算成功
 }
 
-/**
+/*
  * @brief 按主键查询单册图书。
  * @param id 图书主键。
  * @return Book 实体。
@@ -237,7 +237,7 @@ Book BookDao::findById(int id) const {
     return mapBook(statement);                               ///< 映射为领域对象
 }
 
-/** @brief 列出全部图书，按主键升序，保证界面顺序稳定。 */
+/* @brief 列出全部图书，按主键升序，保证界面顺序稳定。 */
 std::vector<Book> BookDao::listAll() const {
     Statement statement = db_.prepare(
         std::string(kBookColumns) + "ORDER BY b.id;");       ///< 全表查询
@@ -246,7 +246,7 @@ std::vector<Book> BookDao::listAll() const {
     return result;
 }
 
-/**
+/*
  * @brief 按题名 / 作者 / ISBN 模糊检索。
  * @param keyword 用户输入的关键字（可含首尾空白）。
  * @return 匹配图书列表。
@@ -268,7 +268,7 @@ std::vector<Book> BookDao::search(const std::string& keyword) const {
     return result;
 }
 
-/** @brief 仅列出「在馆」（status=0）图书，用于借书页下拉框。 */
+/* @brief 仅列出「在馆」（status=0）图书，用于借书页下拉框。 */
 std::vector<Book> BookDao::availableList() const {
     Statement statement = db_.prepare(
         std::string(kBookColumns) + "WHERE b.status=0 ORDER BY b.id;");  ///< 状态过滤
@@ -277,7 +277,7 @@ std::vector<Book> BookDao::availableList() const {
     return result;
 }
 
-/**
+/*
  * @brief 仅更新图书状态（借出/归还时调用）。
  * @param id 图书主键。
  * @param status 目标状态。
@@ -290,7 +290,7 @@ void BookDao::updateStatus(int id, BookStatus status) {
     statement.execute();
 }
 
-/** @brief 统计指定书架上的藏书数（删除书架前的引用预检）。 */
+/* @brief 统计指定书架上的藏书数（删除书架前的引用预检）。 */
 int BookDao::countByShelf(int shelfId) const {
     Statement statement = db_.prepare(
         "SELECT COUNT(*) FROM books WHERE shelf_id=?;");     ///< 聚合查询
@@ -300,7 +300,7 @@ int BookDao::countByShelf(int shelfId) const {
 
 // ==================== StudentDao（students 表） ====================
 
-/** @brief 插入学生，返回新主键；active 布尔值转 0/1 存储。 */
+/* @brief 插入学生，返回新主键；active 布尔值转 0/1 存储。 */
 int StudentDao::insert(const Student& student) {
     Statement statement = db_.prepare(                        ///< 预编译 INSERT
         "INSERT INTO students(student_no,name,major,phone,max_borrow,active) "
@@ -315,7 +315,7 @@ int StudentDao::insert(const Student& student) {
     return static_cast<int>(db_.lastInsertId());             ///< 新主键
 }
 
-/** @brief 全字段更新学生，需带有效主键。 */
+/* @brief 全字段更新学生，需带有效主键。 */
 void StudentDao::update(const Student& student) {
     requirePersisted(student.id());                          ///< 主键守卫
     Statement statement = db_.prepare(                        ///< 预编译 UPDATE
@@ -331,7 +331,7 @@ void StudentDao::update(const Student& student) {
     statement.execute();
 }
 
-/** @brief 按主键删除学生，返回是否命中。 */
+/* @brief 按主键删除学生，返回是否命中。 */
 bool StudentDao::removeById(int id) {
     Statement statement = db_.prepare("DELETE FROM students WHERE id=?;");  ///< 删除语句
     statement.bindInt(1, id);                                ///< 1：主键
@@ -339,7 +339,7 @@ bool StudentDao::removeById(int id) {
     return db_.changes() > 0;                                ///< 影响行数判定
 }
 
-/** @brief 按主键查询学生；不存在抛 NotFoundException。 */
+/* @brief 按主键查询学生；不存在抛 NotFoundException。 */
 Student StudentDao::findById(int id) const {
     Statement statement = db_.prepare(
         std::string(kStudentColumns) + "WHERE id=?;");       ///< 列清单 + 条件
@@ -349,7 +349,7 @@ Student StudentDao::findById(int id) const {
     return mapStudent(statement);                            ///< 映射实体
 }
 
-/** @brief 列出全部学生，按主键升序。 */
+/* @brief 列出全部学生，按主键升序。 */
 std::vector<Student> StudentDao::listAll() const {
     Statement statement = db_.prepare(
         std::string(kStudentColumns) + "ORDER BY id;");      ///< 全表查询
@@ -358,7 +358,7 @@ std::vector<Student> StudentDao::listAll() const {
     return result;
 }
 
-/**
+/*
  * @brief 按学号精确查询。
  * @param no 学号。
  * @param out 输出参数：命中时写入实体。
@@ -373,7 +373,7 @@ bool StudentDao::findByStudentNo(const std::string& no, Student& out) const {
     return true;
 }
 
-/**
+/*
  * @brief 判断学号是否已被「其它记录」占用。
  * @param no 待检查学号。
  * @param excludeId 编辑时排除的自身 ID（新增时传 0）。
@@ -388,7 +388,7 @@ bool StudentDao::existsNo(const std::string& no, int excludeId) const {
     return statement.step() && statement.columnInt(0) > 0;  ///< 计数 > 0 即重复
 }
 
-/**
+/*
  * @brief 统计学生当前未归还的借阅册数。
  * @param studentId 学生主键。
  * @return 未归还记录数（status IN (0,2)）。
@@ -403,7 +403,7 @@ int StudentDao::countActiveLoans(int studentId) const {
 
 // ==================== BookshelfDao（bookshelves 表） ====================
 
-/** @brief 插入书架，返回新主键。 */
+/* @brief 插入书架，返回新主键。 */
 int BookshelfDao::insert(const Bookshelf& shelf) {
     Statement statement = db_.prepare(                        ///< 预编译 INSERT
         "INSERT INTO bookshelves(code,location,category,capacity,remark) "
@@ -417,7 +417,7 @@ int BookshelfDao::insert(const Bookshelf& shelf) {
     return static_cast<int>(db_.lastInsertId());             ///< 新主键
 }
 
-/** @brief 全字段更新书架，需带有效主键。 */
+/* @brief 全字段更新书架，需带有效主键。 */
 void BookshelfDao::update(const Bookshelf& shelf) {
     requirePersisted(shelf.id());                            ///< 主键守卫
     Statement statement = db_.prepare(                        ///< 预编译 UPDATE
@@ -432,7 +432,7 @@ void BookshelfDao::update(const Bookshelf& shelf) {
     statement.execute();
 }
 
-/** @brief 按主键删除书架，返回是否命中（外键 RESTRICT 可能使其失败并抛 DbException）。 */
+/* @brief 按主键删除书架，返回是否命中（外键 RESTRICT 可能使其失败并抛 DbException）。 */
 bool BookshelfDao::removeById(int id) {
     Statement statement = db_.prepare("DELETE FROM bookshelves WHERE id=?;");  ///< 删除语句
     statement.bindInt(1, id);                                ///< 1：主键
@@ -440,7 +440,7 @@ bool BookshelfDao::removeById(int id) {
     return db_.changes() > 0;                                ///< 影响行数判定
 }
 
-/** @brief 按主键查询书架；不存在抛 NotFoundException。 */
+/* @brief 按主键查询书架；不存在抛 NotFoundException。 */
 Bookshelf BookshelfDao::findById(int id) const {
     Statement statement = db_.prepare(
         std::string(kShelfColumns) + "WHERE id=?;");         ///< 列清单 + 条件
@@ -450,7 +450,7 @@ Bookshelf BookshelfDao::findById(int id) const {
     return mapShelf(statement);                              ///< 映射实体
 }
 
-/** @brief 列出全部书架，按主键升序。 */
+/* @brief 列出全部书架，按主键升序。 */
 std::vector<Bookshelf> BookshelfDao::listAll() const {
     Statement statement = db_.prepare(
         std::string(kShelfColumns) + "ORDER BY id;");        ///< 全表查询
@@ -459,7 +459,7 @@ std::vector<Bookshelf> BookshelfDao::listAll() const {
     return result;
 }
 
-/**
+/*
  * @brief 判断书架编号是否已被其它记录占用。
  * @param code 编号。
  * @param excludeId 编辑时排除的自身 ID（新增传 0）。
@@ -473,7 +473,7 @@ bool BookshelfDao::existsCode(const std::string& code, int excludeId) const {
     return statement.step() && statement.columnInt(0) > 0;  ///< 计数 > 0 即重复
 }
 
-/** @brief 统计书架上的藏书数，用于删除预检（业务层给出友好提示而非让外键报错）。 */
+/* @brief 统计书架上的藏书数，用于删除预检（业务层给出友好提示而非让外键报错）。 */
 int BookshelfDao::countBooks(int shelfId) const {
     Statement statement = db_.prepare(
         "SELECT COUNT(*) FROM books WHERE shelf_id=?;");     ///< 聚合查询
@@ -481,7 +481,7 @@ int BookshelfDao::countBooks(int shelfId) const {
     return statement.step() ? statement.columnInt(0) : 0;   ///< 无行返回 0
 }
 
-/**
+/*
  * @brief 读取书架统计视图，返回「书架 + 藏书数 + 在馆数」的组合结构。
  * @return ShelfStat 列表。
  * @note 算法：直接查询 v_shelf_stat（LEFT JOIN + GROUP BY 已在 SQL 层完成聚合），
@@ -509,7 +509,7 @@ std::vector<ShelfStat> BookshelfDao::listWithStats() const {
 
 // ==================== BorrowRecordDao（borrow_records 表） ====================
 
-/**
+/*
  * @brief 插入一条借阅记录。
  * @param record 借阅实体（return_date 应为空）。
  * @return 新记录主键。
@@ -530,7 +530,7 @@ int BorrowRecordDao::insert(const BorrowRecord& record) {
     return static_cast<int>(db_.lastInsertId());             ///< 新主键
 }
 
-/**
+/*
  * @brief 全字段更新借阅记录。
  * @param record 含有效 id 的实体。
  * @note 算法：return_date 为空串时绑定 SQL NULL（而非空字符串），
@@ -555,7 +555,7 @@ void BorrowRecordDao::update(const BorrowRecord& record) {
     statement.execute();
 }
 
-/** @brief 按主键删除借阅记录，返回是否命中。 */
+/* @brief 按主键删除借阅记录，返回是否命中。 */
 bool BorrowRecordDao::removeById(int id) {
     Statement statement = db_.prepare("DELETE FROM borrow_records WHERE id=?;");  ///< 删除语句
     statement.bindInt(1, id);                                ///< 1：主键
@@ -563,7 +563,7 @@ bool BorrowRecordDao::removeById(int id) {
     return db_.changes() > 0;                                ///< 影响行数判定
 }
 
-/** @brief 按主键查询借阅记录；不存在抛 NotFoundException。 */
+/* @brief 按主键查询借阅记录；不存在抛 NotFoundException。 */
 BorrowRecord BorrowRecordDao::findById(int id) const {
     Statement statement = db_.prepare(
         std::string(kLoanColumns) + "WHERE id=?;");          ///< 列清单 + 条件
@@ -573,7 +573,7 @@ BorrowRecord BorrowRecordDao::findById(int id) const {
     return mapLoan(statement);                               ///< 映射实体
 }
 
-/** @brief 列出全部借阅记录，按借出日与主键倒序（最新在前）。 */
+/* @brief 列出全部借阅记录，按借出日与主键倒序（最新在前）。 */
 std::vector<BorrowRecord> BorrowRecordDao::listAll() const {
     Statement statement = db_.prepare(
         std::string(kLoanColumns) +
@@ -583,7 +583,7 @@ std::vector<BorrowRecord> BorrowRecordDao::listAll() const {
     return result;
 }
 
-/**
+/*
  * @brief 办理归还：登记归还日并把状态改为已归还。
  * @param id 记录主键。
  * @param returnDate 归还日期。
@@ -600,7 +600,7 @@ bool BorrowRecordDao::close(int id, const std::string& returnDate) {
     return db_.changes() > 0;                                ///< 是否命中未归还记录
 }
 
-/**
+/*
  * @brief 按筛选条件查询借阅明细（供借阅管理页渲染）。
  * @param filter All / Active / Overdue。
  * @return LoanDetail 列表。
@@ -631,12 +631,12 @@ std::vector<LoanDetail> BorrowRecordDao::listDetails(LoanFilter filter) const {
     return result;
 }
 
-/** @brief 无参重载：查询全部借阅明细。 */
+/* @brief 无参重载：查询全部借阅明细。 */
 std::vector<LoanDetail> BorrowRecordDao::listDetails() const {
     return listDetails(LoanFilter::All);                     ///< 委托给带筛选参数的版本
 }
 
-/** @brief 统计学生当前未归还册数（与 StudentDao::countActiveLoans 等价，供借阅侧复用）。 */
+/* @brief 统计学生当前未归还册数（与 StudentDao::countActiveLoans 等价，供借阅侧复用）。 */
 int BorrowRecordDao::countActiveByStudent(int studentId) const {
     Statement statement = db_.prepare(
         "SELECT COUNT(*) FROM borrow_records WHERE student_id=? AND status IN (0,2);");
@@ -644,7 +644,7 @@ int BorrowRecordDao::countActiveByStudent(int studentId) const {
     return statement.step() ? statement.columnInt(0) : 0;   ///< 无行返回 0
 }
 
-/**
+/*
  * @brief 判断学生是否存在逾期未还记录。
  * @param studentId 学生主键。
  * @param day 判定基准日（业务层传 today()）。
@@ -661,7 +661,7 @@ bool BorrowRecordDao::hasOverdue(int studentId, const std::string& day) const {
     return statement.step() && statement.columnInt(0) > 0;  ///< 计数 > 0 即逾期
 }
 
-/** @brief 判断某册图书是否存在未归还记录（删除图书前的引用预检）。 */
+/* @brief 判断某册图书是否存在未归还记录（删除图书前的引用预检）。 */
 bool BorrowRecordDao::activeForBook(int bookId) const {
     Statement statement = db_.prepare(
         "SELECT COUNT(*) FROM borrow_records WHERE book_id=? AND status IN (0,2);");
@@ -669,7 +669,7 @@ bool BorrowRecordDao::activeForBook(int bookId) const {
     return statement.step() && statement.columnInt(0) > 0;  ///< 计数 > 0 即被占用
 }
 
-/**
+/*
  * @brief 批量把到期未还的正常借阅标记为逾期。
  * @param day 判定基准日。
  * @return 被更新的行数，供状态栏反馈。
