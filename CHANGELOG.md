@@ -4,6 +4,11 @@
 
 ## [未发布]
 
+### 新增
+
+- `Doxyfile`：安装 Doxygen + Graphviz 后执行 `doxygen Doxyfile`，生成带类图 / 调用图的中文 API 文档
+- 本地生成 `compile_commands.json`（CMake `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON`，不入库），供 clangd / VS Code 精确跳转
+
 ### 计划中
 
 - 提供 GitHub Release 附件，让未安装编译环境的用户直接运行 `LibraryApp.exe`

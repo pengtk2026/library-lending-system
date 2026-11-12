@@ -158,6 +158,8 @@ DDL 全文见《详细设计说明书》第 4 章，也在 `src/database.cpp` �
 主要算法（借书事务、日期归一化、ISBN 校验位、列表渲染、演示数据生成与一致性自检）
 均附步骤化说明。共 570 个函数级文档块（src 232 + include 338）。
 
+安装 Doxygen 与 Graphviz 后，在项目根目录执行 `doxygen Doxyfile`，即可在 `build/doxygen/html/index.html` 生成带类图、调用图的可浏览中文 API 文档。配置已排除 `tools/` 下的第三方源码，只索引本项目代码。
+
 ## 常见问题
 
 - **中文显示为方框**：确认系统已安装「微软雅黑」字体；程序启动时通过 `Fl::set_font` 指定。
