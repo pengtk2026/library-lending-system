@@ -43,7 +43,20 @@ jobs:
           dot -V
 
       - name: Generate Chinese API documentation
-        run: doxygen Doxyfile
+        run: |
+          # A fresh clone has no build/ directory (it is gitignored), and Doxygen
+          # will not create nested output directories on its own.
+          mkdir -p build/doxygen/html
+          set -o pipefail
+          doxygen Doxyfile 2>&1 | tee doxygen.log
+          rc=$?
+          if [ "$rc" -ne 0 ]; then
+            echo "::error::doxygen exited with code $rc"
+            { echo "### Doxygen failed"; echo '```'; tail -n 60 doxygen.log; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+            exit "$rc"
+          fi
+          echo "### Doxygen 生成完成" >> "$GITHUB_STEP_SUMMARY"
+          echo "警告数: $(grep -c 'warning:' doxygen.log || true)" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Verify generated site
         run: |
